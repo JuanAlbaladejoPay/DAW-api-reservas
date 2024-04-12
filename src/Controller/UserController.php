@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
-#[Route('/user')]
+#[Route('/api/user')]
 class UserController extends AbstractController {
   #[Route('/', name: 'app_user_index', methods: ['GET'])]
   public function index(UserRepository $userRepository): Response {
@@ -21,7 +21,7 @@ class UserController extends AbstractController {
     ]);
   }
 
-  #[Route('/register', name: 'user_register', methods: ['POST'])] // Creo que hay que poner solo POST
+  /*   #[Route('/register', name: 'user_register', methods: ['POST'])] // Creo que hay que poner solo POST
   public function register(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): Response {
     $user = new User();
     $dataBody = json_decode($request->getContent(), true); // Obtenemos los datos de la petición en un array asociativo (al pasar TRUE como parámetro)
@@ -44,7 +44,7 @@ class UserController extends AbstractController {
 
     return $this->json("Usuario creado correctamente", Response::HTTP_CREATED);
     // Sería conveniente pasar por aquí la ruta de destino o en el cliente lo hacemos?
-  }
+  } */
 
   #[Route('/new', name: 'app_user_new', methods: ['GET', 'POST'])]
   public function new(Request $request, EntityManagerInterface $entityManager): Response {
