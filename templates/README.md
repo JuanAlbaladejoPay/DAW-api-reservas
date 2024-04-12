@@ -1,0 +1,1 @@
+# Creo que esta carpeta se puede omitir completamente
