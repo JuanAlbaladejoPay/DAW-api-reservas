@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Reserva{% endblock %}
+
+{% block body %}
+    <h1>Reserva</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ reserva.id }}</td>
+            </tr>
+            <tr>
+                <th>Fecha</th>
+                <td>{{ reserva.fecha ? reserva.fecha|date('Y-m-d') : '' }}</td>
+            </tr>
+            <tr>
+                <th>Hora</th>
+                <td>{{ reserva.hora ? reserva.hora|date('H:i:s') : '' }}</td>
+            </tr>
+            <tr>
+                <th>Duracion</th>
+                <td>{{ reserva.duracion }}</td>
+            </tr>
+            <tr>
+                <th>Importe</th>
+                <td>{{ reserva.importe }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_reserva_index') }}">back to list</a>
+
+    <a href="{{ path('app_reserva_edit', {'id': reserva.id}) }}">edit</a>
+
+    {{ include('reserva/_delete_form.html.twig') }}
+{% endblock %}

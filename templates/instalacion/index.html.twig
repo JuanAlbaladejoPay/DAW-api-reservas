@@ -1,0 +1,37 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Instalacion index{% endblock %}
+
+{% block body %}
+    <h1>Instalacion index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Nombre</th>
+                <th>PrecioHora</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for instalacion in instalacions %}
+            <tr>
+                <td>{{ instalacion.id }}</td>
+                <td>{{ instalacion.nombre }}</td>
+                <td>{{ instalacion.precioHora }}</td>
+                <td>
+                    <a href="{{ path('app_instalacion_show', {'id': instalacion.id}) }}">show</a>
+                    <a href="{{ path('app_instalacion_edit', {'id': instalacion.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="4">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_instalacion_new') }}">Create new</a>
+{% endblock %}
