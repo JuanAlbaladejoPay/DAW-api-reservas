@@ -9,58 +9,58 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 
-#[Route('/instalacion')]
+#[Route('/api/instalaciones')]
 class InstalacionController extends AbstractController {
   #[Route('/', name: 'app_instalacion_index', methods: ['GET'])]
-  public function index(InstalacionRepository $instalacionRepository): Response {
-    return $this->render('instalacion/index.html.twig', [
-      'instalacions' => $instalacionRepository->findAll(),
+  public function index(InstalacionRepository $instalacionRepository): JsonResponse {
+
+    return $this->json([
+      'instalaciones' => $instalacionRepository->findAll(),
     ]);
   }
 
   #[Route('/new', name: 'app_instalacion_new', methods: ['GET', 'POST'])]
-  public function new(Request $request, EntityManagerInterface $entityManager): Response {
+  public function new(Request $request, EntityManagerInterface $entityManager): JsonResponse {
     $instalacion = new Instalacion();
-    $form = $this->createForm(InstalacionType::class, $instalacion);
-    $form->handleRequest($request);
 
-    if ($form->isSubmitted() && $form->isValid()) {
-      $entityManager->persist($instalacion);
-      $entityManager->flush();
+    $dataBody = json_decode($request->getContent(), true); // Obtenemos los datos de la petición en un array asociativo (al pasar TRUE como parámetro)
 
-      return $this->redirectToRoute('app_instalacion_index', [], Response::HTTP_SEE_OTHER);
-    }
+    $nombre = $dataBody['nombre'];
+    $precioHora = $dataBody['precioHora'];
 
-    return $this->renderForm('instalacion/new.html.twig', [
-      'instalacion' => $instalacion,
-      'form' => $form,
-    ]);
+    $instalacion->setNombre($nombre);
+    $instalacion->setPrecioHora($precioHora);
+
+    $entityManager->persist($instalacion);
+    $entityManager->flush();
+
+    // Insertar nueva instalación (igual que con user)
+    return $this->json(['message' => 'Instalación creada correctamente']);
   }
 
   #[Route('/{id}', name: 'app_instalacion_show', methods: ['GET'])]
-  public function show(Instalacion $instalacion): Response {
-    return $this->render('instalacion/show.html.twig', [
-      'instalacion' => $instalacion,
-    ]);
+  public function show(Instalacion $instalacion): JsonResponse {
+
+
+    return $this->json(["instalacion" => $instalacion]);
   }
 
   #[Route('/{id}/edit', name: 'app_instalacion_edit', methods: ['GET', 'POST'])]
   public function edit(Request $request, Instalacion $instalacion, EntityManagerInterface $entityManager): Response {
-    $form = $this->createForm(InstalacionType::class, $instalacion);
-    $form->handleRequest($request);
+    $dataBody = json_decode($request->getContent(), true);
 
-    if ($form->isSubmitted() && $form->isValid()) {
-      $entityManager->flush();
+    $nombre = $dataBody['nombre'];
+    $precioHora = $dataBody['precioHora'];
 
-      return $this->redirectToRoute('app_instalacion_index', [], Response::HTTP_SEE_OTHER);
-    }
+    $instalacion->setNombre($nombre);
+    $instalacion->setPrecioHora($precioHora);
 
-    return $this->renderForm('instalacion/edit.html.twig', [
-      'instalacion' => $instalacion,
-      'form' => $form,
-    ]);
+    $entityManager->flush();
+
+    return $this->json(['message' => "Instalación <{$instalacion->getId()}> actualizada correctamente"]);
   }
 
   #[Route('/{id}', name: 'app_instalacion_delete', methods: ['POST'])]
@@ -73,3 +73,7 @@ class InstalacionController extends AbstractController {
     return $this->redirectToRoute('app_instalacion_index', [], Response::HTTP_SEE_OTHER);
   }
 }
+
+/* TODO
+- Implementar la lógica de borrado de una instalación
+*/
