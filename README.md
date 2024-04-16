@@ -1,14 +1,29 @@
 # Al clonar el repositorio: #
 Aquí están los pasos que tu compañero debería seguir después de clonar el repositorio:
-## 1º Instalar las dependencias de Composer: Esto instalará todas las dependencias PHP necesarias para el proyecto. 
-**composer install**
 
-## 2º Crear un archivo .env: 
+## 1º Crear un archivo .env: 
 Este archivo debe contener todas las variables de entorno necesarias para el proyecto. Puede basarse en el archivo .env que proporcionaste, pero debe reemplazar los valores de las variables con los valores apropiados para su entorno local.
 
 Luego, debe **editar el archivo .env** y establecer los valores correctos para su entorno.
 
+## 2º Instalar las dependencias de Composer: Esto instalará todas las dependencias PHP necesarias para el proyecto. 
+**composer require jms/serializer-bundle**
+
+**composer require friendsofsymfony/rest-bundle**
+
+**composer require symfony/maker-bundle**
+
+**composer require symfony/orm-pack --with-all-dependencies**
+
+**composer require lexik/jwt-authentication-bundle**
+
+**composer install**
+
 ## 3º Generar las claves JWT: Como las claves JWT no están en el repositorio, tu compañero necesitará generar las suyas propias.
+Si no tienes instalado OPENSSL en el ordenador, instalalo (enlace para windows:)
+
+**Instalar OPENSSL:** https://slproweb.com/products/Win32OpenSSL.html
+
 **php bin/console lexik:jwt:generate-keypair** 
 
 Si falla ese comando, hay que crear manualmente la carpeta jwt en config (/config/jwt) y ejecutar lo siguiente:
