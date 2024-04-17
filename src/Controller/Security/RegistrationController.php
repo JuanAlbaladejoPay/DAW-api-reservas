@@ -9,9 +9,16 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use App\Entity\User;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 
 #[Route('/api', name: 'api_')]
 class RegistrationController extends AbstractController {
+  private $JWTManager;
+
+  public function __construct(JWTTokenManagerInterface $JWTManager) {
+    $this->JWTManager = $JWTManager;
+  }
+
   #[Route('/register', name: 'register', methods: 'POST')]
   public function index(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): JsonResponse {
     $user = new User();
@@ -33,6 +40,8 @@ class RegistrationController extends AbstractController {
     $entityManager->persist($user);
     $entityManager->flush();
 
-    return $this->json(['message' => 'Registered Successfully']);
+    $token = $this->JWTManager->create($user);
+
+    return $this->json(['ok' => 'Te has registrado correctamente', 'token' => $token]);
   }
 }
