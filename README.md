@@ -71,3 +71,5 @@ paths:
 ## Enlace de ayuda:
 
 https://www.binaryboxtuts.com/php-tutorials/symfony-6-json-web-tokenjwt-authentication/
+
+## A funcionar!!
