@@ -11,6 +11,9 @@ use App\Entity\User;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+
 #[Route('/api', name: 'api_')]
 class RegistrationController extends AbstractController {
   private $JWTManager;
@@ -20,7 +23,7 @@ class RegistrationController extends AbstractController {
   }
 
   #[Route('/register', name: 'register', methods: 'POST')]
-  public function index(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): JsonResponse {
+  public function index(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher, MailerInterface $mailer): JsonResponse {
     $user = new User();
     $dataBody = json_decode($request->getContent(), true); // Obtenemos los datos de la petición en un array asociativo (al pasar TRUE como parámetro)
 
@@ -41,6 +44,23 @@ class RegistrationController extends AbstractController {
     $entityManager->flush();
 
     $token = $this->JWTManager->create($user);
+
+    try {
+      // Crear el correo electrónico
+      $email = (new TemplatedEmail())
+        ->from('letsmove.murcia@gmail.com')
+        ->to("juan.albaladejo.pay@gmail.com") // $user->getEmail()
+        ->subject('Bienvenido a nuestra plataforma')
+        ->htmlTemplate('emails/welcome.html.twig')
+        ->context([
+          'name' => $user->getNombre(),
+        ]);
+
+      // Enviar el correo electrónico
+      $mailer->send($email);
+    } catch (\Exception $e) {
+      return $this->json(['error' => 'Ha ocurrido un error al enviar el email'], 500);
+    }
 
     return $this->json(['ok' => 'Te has registrado correctamente', 'token' => $token]);
   }
