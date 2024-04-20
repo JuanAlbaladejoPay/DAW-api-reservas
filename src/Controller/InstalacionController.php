@@ -14,7 +14,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/api/instalaciones')]
 class InstalacionController extends AbstractController {
-  #[Route('/', name: 'app_instalacion_index', methods: ['GET'])]
+  #[Route('/all', name: 'app_instalacion_index', methods: ['GET'])]
   public function index(InstalacionRepository $instalacionRepository): JsonResponse {
 
     return $this->json([

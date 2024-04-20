@@ -14,7 +14,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/api/reservas')]
 class ReservaController extends AbstractController {
-  #[Route('/', name: 'app_reserva_index', methods: ['GET'])]
+  #[Route('/all', name: 'app_reserva_index', methods: ['GET'])]
   public function index(ReservaRepository $reservaRepository): JsonResponse {
 
     return $this->json(["reservas" => $reservaRepository->findAll()]);
