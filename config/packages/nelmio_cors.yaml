@@ -1,16 +1,17 @@
 nelmio_cors:
-    defaults:
-        origin_regex: false
-        allow_origin: ['http://localhost:3000', 'http://localhost:3001']
-        allow_methods: ['GET', 'OPTIONS', 'POST', 'PUT', 'PATCH', 'DELETE']
-        allow_headers: ['Content-Type', 'Authorization']
-        expose_headers: ['Link']
-        allow_credentials: true
-        max_age: 3600
-    paths:
-        '^/api':
-            allow_origin: ['http://localhost:3000', 'http://localhost:3001']
-            allow_methods: ['GET', 'OPTIONS', 'POST', 'PUT', 'PATCH', 'DELETE']
-            allow_headers: ['Content-Type', 'Authorization']
-            max_age: 3600
-            allow_credentials: true
+  defaults:
+    origin_regex: true
+    allow_origin: ['^http://localhost:[0-9]+']
+    allow_methods: ['GET', 'OPTIONS', 'POST', 'PUT', 'PATCH', 'DELETE']
+    allow_headers: ['Content-Type', 'Authorization']
+    expose_headers: ['Link']
+    allow_credentials: true
+    max_age: 3600
+  paths:
+    '^/api':
+      origin_regex: true
+      allow_origin: ['^http://localhost:[0-9]+']
+      allow_methods: ['GET', 'OPTIONS', 'POST', 'PUT', 'PATCH', 'DELETE']
+      allow_headers: ['Content-Type', 'Authorization']
+      max_age: 3600
+      allow_credentials: true
