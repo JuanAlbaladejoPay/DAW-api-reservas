@@ -1,18 +1,13 @@
+ALTER TABLE Instalaciones AUTO_INCREMENT = 1;
+
 INSERT INTO Instalaciones (nombre, precioHora) VALUES
-('Tenis - 1', 6),
-('Tenis - 2', 6),
-('Fútbol 7 - 1', 21),
-('Fútbol 7 - 2', 21),
+('Tenis', 6),
+('Fútbol 7', 21),
 ('Padel - 1', 16),
 ('Padel - 2', 16),
-('Padel - 3', 16),
-('Padel - 4', 16),
-('Fútbol sala - Outdoor', 10),
-('Fútbol sala - Pabellon', 15),
-('Baloncesto - Outdoor', 10),
-('Baloncesto - Pabellon', 15),
+('Fútbol sala', 15),
+('Baloncesto', 15),
 ('Piscina cubierta', 3),
-('Gimnasio', 3),
 ('Volleyball', 15);
 
 /* TODO
