@@ -18,7 +18,7 @@ security:
         check_path: /api/login_check
         username_path: email
         password_path: password
-        success_handler: lexik_jwt_authentication.handler.authentication_success
+        success_handler: App\Controller\Security\LoginSuccessHandler
         failure_handler: lexik_jwt_authentication.handler.authentication_failure
 
     api:
@@ -35,6 +35,7 @@ security:
   access_control:
     - { path: ^/api/register, roles: PUBLIC_ACCESS }
     - { path: ^/api/login, roles: PUBLIC_ACCESS }
+    - { path: ^/api/login-google, roles: PUBLIC_ACCESS }
     - { path: ^/api/reservas/all, roles: PUBLIC_ACCESS }
     - { path: ^/api/instalaciones/all, roles: PUBLIC_ACCESS }
     - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }

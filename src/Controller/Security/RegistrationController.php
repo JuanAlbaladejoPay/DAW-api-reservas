@@ -1,6 +1,7 @@
 <?php
 
-namespace App\Controller\Security; // He añadio \Security
+namespace App\Controller\Security;
+// He añadio \Security
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
@@ -10,6 +11,7 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use App\Entity\User;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
+
 // --> EMAIL
 use Symfony\Component\Mailer\Transport;
 use Symfony\Component\Mailer\Mailer;
@@ -26,26 +28,49 @@ class RegistrationController extends AbstractController {
 
   #[Route('/register', name: 'register', methods: 'POST')]
   public function index(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): JsonResponse {
-    $user = new User();
     $dataBody = json_decode($request->getContent(), true); // Obtenemos los datos de la petición en un array asociativo (al pasar TRUE como parámetro)
 
+    // Comprobamos que los campos requeridos están en la petición
+    $missingFieldMessage = $this->verifyRequiredFields($dataBody);
+    if ($missingFieldMessage) {
+      return $this->json(['error' => $missingFieldMessage], 400);
+    }
+
+    // Compruebo si ya existe este usuario en la BD (por si se registró con Google pero no puso password)
     $email = $dataBody['email'];
-    $hashedPassword = $passwordHasher->hashPassword($user, $dataBody['password']); // Con esto hasheamos la password
-    $name = $dataBody['name'];
-    $surname = $dataBody['surname'];
-    $phone = $dataBody['phone'];
+    $user = $entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
 
-    $user->setEmail($email);
-    $user->setRoles(['ROLE_USER']); // Por defecto, todos los usuarios son ROLE_USER (se podría cambiar en el formulario de registro)
-    $user->setPassword($hashedPassword);
-    $user->setNombre($name);
-    $user->setApellidos($surname);
-    $user->setTelefono($phone);
+    // Si el usuario existía pero no tiene password (Viene de GOOGLE), le añadimos la password y el teléfono
+    if ($user && $user->getPassword() === null) {
+      $hashedPassword = $passwordHasher->hashPassword($user, $dataBody['password']); // Con esto hasheamos la password
+      $user->setPassword($hashedPassword);
+      $user->setTelefono($dataBody['phone']);
 
-    $entityManager->persist($user);
+      $entityManager->flush();
+
+      $token = $this->JWTManager->create($user);
+      return $this->json(['ok' => 'Te has registrado correctamente', 'token' => $token, 'username' => $user->getNombre(), 'avatar' => $user->getAvatar()]);
+    }
+
+    // Compruebo que el usuario ya existía en la BD teniendo password (para responder que ya existe un usuario con ese email)
+    if ($user && $user->getPassword() !== null) {
+      return $this->json(['error' => 'Ya existe un usuario con ese email']);
+    }
+
+    // Si el usuario no existía previamente lo creamos
+    $newUser = new User();
+    $newUser->setEmail($email);
+    $newUser->setRoles(['ROLE_USER']); // Por defecto, todos los usuarios son ROLE_USER (se podría cambiar en el formulario de registro
+    $newUser->setNombre($dataBody['name']);
+    $newUser->setApellidos($dataBody['surname']);
+    $newUser->setTelefono($dataBody['phone']);
+    $hashedPassword = $passwordHasher->hashPassword($newUser, $dataBody['password']); // Con esto hasheamos la password
+    $newUser->setPassword($hashedPassword);
+
+    $entityManager->persist($newUser);
     $entityManager->flush();
 
-    $token = $this->JWTManager->create($user);
+    $token = $this->JWTManager->create($newUser);
 
     // --> Enviar EMAIL (lo dejo comentado para descomentar solo cuando haga falta enviar un email de verdad)
     /* try {
@@ -71,6 +96,23 @@ class RegistrationController extends AbstractController {
       return $this->json(['error' => "Ha ocurrido un error al enviar el email $e"], 500);
     } */
 
-    return $this->json(['ok' => 'Te has registrado correctamente', 'token' => $token]);
+    return $this->json(['ok' => 'Te has registrado correctamente', 'results' => ['token' => $token, 'name' => $newUser->getNombre(), 'email' => $newUser->getEmail(), 'picture' => null]]);
+  }
+
+  private function verifyRequiredFields($dataBody) {
+    $requiredFields = ['email', 'password', 'name', 'surname', 'phone'];
+
+    foreach ($requiredFields as $field) {
+      if (!isset($dataBody[$field])) {
+        return "El campo '$field' es requerido.";
+      }
+    }
+
+    return null;
   }
 }
+
+/* TODO
+- Refactorizar el código (se repiten muchas líneas)
+- Poner una columna "avatar" en la bd?? De google recibimos también la foto de perfil
+*/
