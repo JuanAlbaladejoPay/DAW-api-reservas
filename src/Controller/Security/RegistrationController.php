@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 
 use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+use Symfony\Component\Mime\Email;
 
 #[Route('/api', name: 'api_')]
 class RegistrationController extends AbstractController {
@@ -47,14 +47,11 @@ class RegistrationController extends AbstractController {
 
     try {
       // Crear el correo electrónico
-      $email = (new TemplatedEmail())
+      $email = (new Email())
         ->from('letsmove.murcia@gmail.com')
-        ->to("juan.albaladejo.pay@gmail.com") // $user->getEmail()
-        ->subject('Bienvenido a nuestra plataforma')
-        ->htmlTemplate('emails/welcome.html.twig')
-        ->context([
-          'name' => $user->getNombre(),
-        ]);
+        ->to($user->getEmail())
+        ->subject('¡Bienvenido a nuestro sitio!')
+        ->text('¡Gracias por registrarte en nuestro sitio!');
 
       // Enviar el correo electrónico
       $mailer->send($email);
