@@ -43,7 +43,7 @@ class RegistrationController extends AbstractController {
     $entityManager->persist($user);
     $entityManager->flush();
 
-    $token = $this->JWTManager->create($user);
+    // $token = $this->JWTManager->create($user);
 
     try {
       // Crear el correo electrónico
@@ -56,9 +56,9 @@ class RegistrationController extends AbstractController {
       // Enviar el correo electrónico
       $mailer->send($email);
     } catch (\Exception $e) {
-      return $this->json(['error' => 'Ha ocurrido un error al enviar el email'], 500);
+      return $this->json(['error' => "Ha ocurrido un error al enviar el email $e"], 500);
     }
 
-    return $this->json(['ok' => 'Te has registrado correctamente', 'token' => $token]);
+    return $this->json(['ok' => 'Te has registrado correctamente', 'token' => "hola"]);
   }
 }
