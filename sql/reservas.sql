@@ -19,3 +19,24 @@ INSERT INTO Reservas (fecha, hora, duracion, importe, idUsuario, idInstalacion) 
 ('2024-04-25', '22:00', '60', '15', '1', '8'),
 ('2024-04-25', '18:00', '60', '15', '1', '1'),
 ('2024-04-25', '23:00', '60', '15', '1', '2');
+
+/* 
+
+// SI NO TE FUNCIONA EL INSERT HAZ ESTO
+
+// SELECT TABLE_NAME, CONSTRAINT_NAME
+// FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+// WHERE COLUMN_NAME = 'idInstalacion';
+
+// -- Eliminar la restricción de clave externa
+// ALTER TABLE reservas DROP FOREIGN KEY FK_536BC957FE06F768; <- EL CODIGO QUE TE SALGA A TI
+
+// -- Deshabilitar temporalmente las restricciones de clave externa
+// SET FOREIGN_KEY_CHECKS = 0;
+
+// -- Eliminar el índice
+// ALTER TABLE reservas DROP INDEX UNIQ_536BC957FE06F768; <- EL CODIGO QUE TE SALGA A TI
+
+// -- Volver a habilitar las restricciones de clave externa
+// SET FOREIGN_KEY_CHECKS = 1;
+ */
