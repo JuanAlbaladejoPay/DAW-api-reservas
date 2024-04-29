@@ -38,3 +38,6 @@ security:
     - { path: ^/api/reservas/all, roles: PUBLIC_ACCESS }
     - { path: ^/api/instalaciones/all, roles: PUBLIC_ACCESS }
     - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
+
+# TODO:
+# - Proteger todas las rutas (ahora no mostramos nada hasta que no hacemos Login, por lo que podemos pedir TOKEN para recibir instalaciones, reservas, etc)
