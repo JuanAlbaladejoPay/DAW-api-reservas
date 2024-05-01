@@ -14,12 +14,6 @@ class Reserva {
   #[ORM\Column]
   private ?int $id = null;
 
-  #[ORM\Column(type: Types::DATE_MUTABLE)]
-  private ?\DateTimeInterface $fecha = null;
-
-  #[ORM\Column(type: Types::TIME_MUTABLE)]
-  private ?\DateTimeInterface $hora = null;
-
   #[ORM\Column]
   private ?int $duracion = null;
 
@@ -30,32 +24,16 @@ class Reserva {
   #[ORM\JoinColumn(name: "idUsuario", referencedColumnName: "id", nullable: false)]
   private ?User $idUsuario = null;
 
-  #[ORM\OneToOne(targetEntity: Instalacion::class, cascade: ['persist', 'remove'])]
+  #[ORM\ManyToOne(targetEntity: Instalacion::class)]
   #[ORM\JoinColumn(name: "idInstalacion", referencedColumnName: "id", nullable: false)]
   private ?Instalacion $idInstalacion = null;
 
+  #[ORM\Column(type: Types::DATETIME_MUTABLE, name: "fechaYHora")]
+  private ?\DateTimeInterface $fechaYHora = null;
+
+
   public function getId(): ?int {
     return $this->id;
-  }
-
-  public function getFecha(): ?\DateTimeInterface {
-    return $this->fecha;
-  }
-
-  public function setFecha(\DateTimeInterface $fecha): static {
-    $this->fecha = $fecha;
-
-    return $this;
-  }
-
-  public function getHora(): ?\DateTimeInterface {
-    return $this->hora;
-  }
-
-  public function setHora(\DateTimeInterface $hora): static {
-    $this->hora = $hora;
-
-    return $this;
   }
 
   public function getDuracion(): ?int {
@@ -92,8 +70,21 @@ class Reserva {
     return $this->idInstalacion;
   }
 
-  public function setIdInstalacion(Instalacion $idInstalacion): static {
+  public function setIdInstalacion(?Instalacion $idInstalacion): static {
     $this->idInstalacion = $idInstalacion;
+
+    return $this;
+  }
+
+  /**
+   * @return \DateTime
+   */
+  public function getFechaYHora(): ?\DateTimeInterface {
+    return $this->fechaYHora;
+  }
+
+  public function setFechaYHora(\DateTimeInterface $fechaYHora): static {
+    $this->fechaYHora = $fechaYHora;
 
     return $this;
   }

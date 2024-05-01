@@ -14,35 +14,33 @@ use Doctrine\Persistence\ManagerRegistry;
  * @method Reserva[]    findAll()
  * @method Reserva[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class ReservaRepository extends ServiceEntityRepository
-{
-    public function __construct(ManagerRegistry $registry)
-    {
-        parent::__construct($registry, Reserva::class);
-    }
+class ReservaRepository extends ServiceEntityRepository {
+  public function __construct(ManagerRegistry $registry) {
+    parent::__construct($registry, Reserva::class);
+  }
 
-//    /**
-//     * @return Reserva[] Returns an array of Reserva objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('r')
-//            ->andWhere('r.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('r.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
+  /**
+   * @return Reserva[] Returns an array of Reserva objects
+   */
+  // Devolvería lo mismo que: SELECT * FROM reservas WHERE fechaYHora >= '2024-04-24 12:00:00'  AND fechaYHora <= '2024-04-24 14:30:00';
+  public function findReservasByDayAndHour($fechaInicioComprobacion, $fechaFinComprobacion): array {
+    return $this->createQueryBuilder('r')
+      ->andWhere('r.fechaYHora >= :startDateTime')
+      ->andWhere('r.fechaYHora < :endDateTime')
+      ->setParameter('startDateTime', $fechaInicioComprobacion)
+      ->setParameter('endDateTime', $fechaFinComprobacion)
+      ->orderBy('r.id', 'ASC')
+      ->getQuery()
+      ->getResult();
+  }
 
-//    public function findOneBySomeField($value): ?Reserva
-//    {
-//        return $this->createQueryBuilder('r')
-//            ->andWhere('r.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+  //    public function findOneBySomeField($value): ?Reserva
+  //    {
+  //        return $this->createQueryBuilder('r')
+  //            ->andWhere('r.exampleField = :val')
+  //            ->setParameter('val', $value)
+  //            ->getQuery()
+  //            ->getOneOrNullResult()
+  //        ;
+  //    }
 }
