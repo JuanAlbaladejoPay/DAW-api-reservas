@@ -30,9 +30,10 @@ class Reserva {
   #[ORM\JoinColumn(name: "idUsuario", referencedColumnName: "id", nullable: false)]
   private ?User $idUsuario = null;
 
-  #[ORM\OneToOne(targetEntity: Instalacion::class, cascade: ['persist', 'remove'])]
+  #[ORM\ManyToOne(targetEntity: Instalacion::class)]
   #[ORM\JoinColumn(name: "idInstalacion", referencedColumnName: "id", nullable: false)]
   private ?Instalacion $idInstalacion = null;
+
 
   public function getId(): ?int {
     return $this->id;
@@ -92,7 +93,7 @@ class Reserva {
     return $this->idInstalacion;
   }
 
-  public function setIdInstalacion(Instalacion $idInstalacion): static {
+  public function setIdInstalacion(?Instalacion $idInstalacion): static {
     $this->idInstalacion = $idInstalacion;
 
     return $this;

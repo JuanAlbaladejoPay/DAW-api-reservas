@@ -21,17 +21,26 @@ class ReservaController extends AbstractController {
   }
 
   #[Route('/new', name: 'app_reserva_new', methods: ['GET', 'POST'])]
-  public function new(Request $request, EntityManagerInterface $entityManager): JsonResponse {
+  public function new(Request $request, EntityManagerInterface $entityManager, ReservaRepository $reservaRepository): JsonResponse {
     $reserva = new Reserva();
 
     $dataBody = json_decode($request->getContent(), true);
 
+
     $fecha = new \DateTime($dataBody['fecha']);
     $hora = new \DateTime($dataBody['hora']);
     $duracion = $dataBody['duracion'];
-    $importe = $dataBody['importe'];
-    $idUsuario = $dataBody['idUsuario'];
     $idInstalacion = $dataBody['idInstalacion'];
+    $horaInicioComprobacion = (clone $hora)->modify('-60 minutes');
+    $horaFinComprobacion = (clone $hora)->modify("+$duracion minutes");
+    // Compruebo si ya existe una reserva para esa instalación en esa fecha y hora
+    $reservaExistente = $reservaRepository->findReservasByDayAndHour($fecha, $horaInicioComprobacion, $horaFinComprobacion);
+    if ($reservaExistente) {
+      return $this->json(['message' => 'Ya existe una reserva para esa instalación en esa fecha y hora'], Response::HTTP_CONFLICT);
+    }
+
+    $importe = $dataBody['importe'];
+    $idUsuario = $dataBody['idUsuario']; // Esto lo rescatamos del inicio de sesión, no del body
 
     $reserva->setFecha($fecha);
     $reserva->setHora($hora);
