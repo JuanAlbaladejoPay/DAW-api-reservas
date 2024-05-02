@@ -53,7 +53,7 @@ class ReservaController extends AbstractController {
     // Compruebo si ya existe una reserva para esa instalación en esa fecha y hora
     $fechaInicioComprobacion = (clone $fechaYHora)->modify('-60 minutes');
     $fechaFinComprobacion = (clone $fechaYHora)->modify("+$duracion minutes");
-    $reservasExistentes = $reservaRepository->findReservasByDayAndHour($fechaInicioComprobacion, $fechaFinComprobacion);
+    $reservasExistentes = $reservaRepository->findReservasByDayAndHour($fechaInicioComprobacion, $fechaFinComprobacion, $idInstalacion);
 
     if (count($reservasExistentes) > 0) {
       // aquí tendríamos que comprobar si la duración de la reserva anterior es 60min (en caso de ser 60 no habría problema) pero si es 90min o más, no se podría hacer la reserva

@@ -22,13 +22,15 @@ class ReservaRepository extends ServiceEntityRepository {
   /**
    * @return Reserva[] Returns an array of Reserva objects
    */
-  // Devolvería lo mismo que: SELECT * FROM reservas WHERE fechaYHora >= '2024-04-24 12:00:00'  AND fechaYHora <= '2024-04-24 14:30:00';
-  public function findReservasByDayAndHour($fechaInicioComprobacion, $fechaFinComprobacion): array {
+  // Devolvería lo mismo que: SELECT * FROM reservas WHERE fechaYHora >= '2024-04-24 12:00:00'  AND fechaYHora <= '2024-04-24 14:30:00' AND idInstalacion = 1;;
+  public function findReservasByDayAndHour($fechaInicioComprobacion, $fechaFinComprobacion, $idInstalacion): array {
     return $this->createQueryBuilder('r')
       ->andWhere('r.fechaYHora >= :startDateTime')
       ->andWhere('r.fechaYHora < :endDateTime')
+      ->andWhere('r.idInstalacion = :idInstalacion')
       ->setParameter('startDateTime', $fechaInicioComprobacion)
       ->setParameter('endDateTime', $fechaFinComprobacion)
+      ->setParameter('idInstalacion', $idInstalacion)
       ->orderBy('r.id', 'ASC')
       ->getQuery()
       ->getResult();
