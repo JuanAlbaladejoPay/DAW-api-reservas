@@ -33,8 +33,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface {
   #[ORM\Column(length: 255)]
   private ?string $apellidos = null;
 
-  #[ORM\Column]
+  #[ORM\Column(nullable: true)]
   private ?int $telefono = null;
+
+  #[ORM\Column(length: 255, nullable: true)]
+  private ?string $picture = null;
 
   public function getId(): ?int {
     return $this->id;
@@ -79,7 +82,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface {
   /**
    * @see PasswordAuthenticatedUserInterface
    */
-  public function getPassword(): string {
+  public function getPassword(): ?string {
     return $this->password;
   }
 
@@ -125,5 +128,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface {
     $this->telefono = $telefono;
 
     return $this;
+  }
+
+  public function getPicture(): ?string
+  {
+      return $this->picture;
+  }
+
+  public function setPicture(?string $picture): static
+  {
+      $this->picture = $picture;
+
+      return $this;
   }
 }

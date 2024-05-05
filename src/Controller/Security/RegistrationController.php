@@ -40,8 +40,14 @@ class RegistrationController extends AbstractController {
     $email = $dataBody['email'];
     $user = $entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
 
-    // Si el usuario existía pero no tiene password (Viene de GOOGLE), le añadimos la password y el teléfono
+    // Si el usuario existía pero no tiene password (Viene de GOOGLE), le añadimos la password y el teléfono (previamente comprobamos que realmente es el mismo usuario)
     if ($user && $user->getPassword() === null) {
+      $name = $dataBody['name'];
+      $surname = $dataBody['surname'];
+      if ($user->getNombre() !== $name || $user->getApellidos() !== $surname) {
+        return $this->json(['error' => 'Ya existe un usuario con ese email']);
+      }
+
       $hashedPassword = $passwordHasher->hashPassword($user, $dataBody['password']); // Con esto hasheamos la password
       $user->setPassword($hashedPassword);
       $user->setTelefono($dataBody['phone']);
@@ -49,7 +55,7 @@ class RegistrationController extends AbstractController {
       $entityManager->flush();
 
       $token = $this->JWTManager->create($user);
-      return $this->json(['ok' => 'Te has registrado correctamente', 'token' => $token, 'username' => $user->getNombre(), 'avatar' => $user->getAvatar()]);
+      return $this->json(['ok' => 'Te has registrado correctamente', 'results' => ['token' => $token, 'name' => $name, 'email' => $email, 'picture' => null]]);
     }
 
     // Compruebo que el usuario ya existía en la BD teniendo password (para responder que ya existe un usuario con ese email)
@@ -114,5 +120,45 @@ class RegistrationController extends AbstractController {
 
 /* TODO
 - Refactorizar el código (se repiten muchas líneas)
-- Poner una columna "avatar" en la bd?? De google recibimos también la foto de perfil
+- Poner una columna "picture" en la bd?? De google recibimos también la foto de perfil, sería conveniente tener una columna para guardar imágenes
+*/
+
+/* TODO
+- Subir imágenes desde el cliente
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
+
+
+
+/**
+ * @Route("/upload", name="upload", methods={"POST"})
+ *
+public function upload(Request $request): Response
+{
+  $pictureFile = $request->files->get('picture');
+
+  if ($pictureFile) {
+    $originalFilename = pathinfo($pictureFile->getClientOriginalName(), PATHINFO_FILENAME);
+    $safeFilename = transliterator_transliterate('Any-Latin; Latin-ASCII; [^A-Za-z0-9_] remove; Lower()', $originalFilename);
+    $newFilename = $safeFilename.'-'.uniqid().'.'.$pictureFile->guessExtension();
+
+    try {
+      $pictureFile->move(
+        $this->getParameter('pictures_directory'),
+        $newFilename
+      );
+    } catch (FileException $e) {
+      // ... maneja la excepción si algo sale mal durante la carga del archivo
+    }
+
+    // Aquí puedes actualizar la entidad User con la ruta de la imagen
+    // $user->setPicture($newFilename);
+    // $entityManager->persist($user);
+    // $entityManager->flush();
+
+    return $this->json(['message' => 'Imagen subida con éxito']);
+  }
+
+  return $this->json(['message' => 'No se proporcionó ninguna imagen'], 400);
+}
 */
