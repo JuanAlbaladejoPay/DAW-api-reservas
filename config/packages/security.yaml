@@ -36,8 +36,6 @@ security:
     - { path: ^/api/register, roles: PUBLIC_ACCESS }
     - { path: ^/api/login, roles: PUBLIC_ACCESS }
     - { path: ^/api/login-google, roles: PUBLIC_ACCESS }
-    - { path: ^/api/reservas/all, roles: PUBLIC_ACCESS }
-    - { path: ^/api/instalaciones/all, roles: PUBLIC_ACCESS }
     - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
 
 # TODO:
