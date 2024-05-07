@@ -23,8 +23,7 @@ class ReservaController extends AbstractController {
     foreach ($reservas as $reserva) {
       $reservasArray[] = [
         'id' => $reserva->getId(),
-        'fecha' => $reserva->getFechaYHora()->format('Y-m-d'),
-        'hora' => $reserva->getFechaYHora()->format('H:i'),
+        'fechaYHora' => $reserva->getFechaYHora()->format('c'),
         'duracion' => $reserva->getDuracion(),
         'importe' => $reserva->getImporte(),
         'idUsuario' => $reserva->getIdUsuario()->getId(),
@@ -33,6 +32,58 @@ class ReservaController extends AbstractController {
     }
 
     return $this->json(["reservas" => $reservasArray]);
+  }
+
+  #[Route('/userEmail', name: 'app_reservas_usuario', methods: ['GET'])]
+  public function showUserReservations(ReservaRepository $reservaRepository, Request $request, InstalacionRepository $instalacionRepository): JsonResponse {
+
+    /** @var \App\Entity\User $user */
+    $user = $this->getUser();
+
+    $reservas = $reservaRepository->findBy(['idUsuario' => $user->getId()]);
+
+    if (count($reservas) > 0) {
+      $reservasJSON = [];
+      foreach ($reservas as $reserva) {
+        $instalacion = $instalacionRepository->find($reserva->getIdInstalacion()->getId());
+        $reservasJSON[] = [
+          'id' => $reserva->getId(),
+          'fechaYHora' => $reserva->getFechaYHora()->format('c'),
+          'duracion' => $reserva->getDuracion(),
+          'importe' => $reserva->getImporte(),
+          'idUsuario' => $reserva->getIdUsuario()->getId(),
+          'idInstalacion' => $reserva->getIdInstalacion()->getId(),
+          'nombreInstalacion' => $instalacion->getNombre(),
+        ];
+      }
+      return $this->json(["ok" => 'Todo ha ido correcto' , 'results' => $reservasJSON]);
+    }
+
+    return $this->json(['ok' => 'No hay reservas para el usuario con email ', 'results' => 0]);
+  }
+
+  #[Route('/idInstalacion={idInstalacion}', name: 'app_reservationsByInstallation', methods: ['GET'])]
+  public function showReservationsByInstallation($idInstalacion, ReservaRepository $reservaRepository, Request $request, InstalacionRepository $instalacionRepository): JsonResponse {
+    $reservas = $reservaRepository->findBy(['idInstalacion' => $idInstalacion]);
+
+    if (count($reservas) > 0) {
+      $reservasJSON = [];
+      foreach ($reservas as $reserva) {
+        $instalacion = $instalacionRepository->find($reserva->getIdInstalacion()->getId());
+        $reservasJSON[] = [
+          'id' => $reserva->getId(),
+          'fechaYHora' => $reserva->getFechaYHora()->format('c'),
+          'duracion' => $reserva->getDuracion(),
+          'importe' => $reserva->getImporte(),
+          'idUsuario' => $reserva->getIdUsuario()->getId(),
+          'idInstalacion' => $reserva->getIdInstalacion()->getId(),
+          'nombreInstalacion' => $instalacion->getNombre(),
+        ];
+      }
+      return $this->json(["ok" => 'Todo ha ido correcto' , 'results' => $reservasJSON]);
+    }
+
+    return $this->json(['ok' => 'No hay reservas para el usuario con email ', 'results' => 0]);
   }
 
   #[Route('/new', name: 'app_reserva_new', methods: ['GET', 'POST'])]
