@@ -34,9 +34,10 @@ security:
 
   access_control:
     - { path: ^/api/register, roles: PUBLIC_ACCESS }
+    - { path: ^/api/verify/email, roles: PUBLIC_ACCESS }
     - { path: ^/api/login, roles: PUBLIC_ACCESS }
     - { path: ^/api/login-google, roles: PUBLIC_ACCESS }
-    - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
+    - { path: ^/api, roles: ROLE_VERIFIED }
 
 # TODO:
 # - Proteger todas las rutas (ahora no mostramos nada hasta que no hacemos Login, por lo que podemos pedir TOKEN para recibir instalaciones, reservas, etc)

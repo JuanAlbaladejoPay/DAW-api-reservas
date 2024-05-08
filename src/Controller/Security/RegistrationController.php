@@ -3,6 +3,7 @@
 namespace App\Controller\Security;
 // He añadio \Security
 
+use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\ORM\EntityManagerInterface;
@@ -13,6 +14,8 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 
 // --> EMAIL
+use SymfonyCasts\Bundle\VerifyEmail\Exception\VerifyEmailExceptionInterface;
+use SymfonyCasts\Bundle\VerifyEmail\VerifyEmailHelperInterface;
 use Symfony\Component\Mailer\Transport;
 use Symfony\Component\Mailer\Mailer;
 use Symfony\Component\Mime\Email;
@@ -22,12 +25,12 @@ use Symfony\Component\Mime\Email;
 class RegistrationController extends AbstractController {
   private $JWTManager;
 
-  public function __construct(JWTTokenManagerInterface $JWTManager) {
+  public function __construct(JWTTokenManagerInterface $JWTManager) { // Añadimos el servicio de verificación de email al constructor
     $this->JWTManager = $JWTManager;
   }
 
   #[Route('/register', name: 'register', methods: 'POST')]
-  public function index(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): JsonResponse {
+  public function index(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher, VerifyEmailHelperInterface $verifyEmailHelper): JsonResponse {
     $dataBody = json_decode($request->getContent(), true); // Obtenemos los datos de la petición en un array asociativo (al pasar TRUE como parámetro)
 
     // Comprobamos que los campos requeridos están en la petición
@@ -76,8 +79,19 @@ class RegistrationController extends AbstractController {
     $entityManager->persist($newUser);
     $entityManager->flush();
 
-    $token = $this->JWTManager->create($newUser);
+    /* Creamos la url de verificación */
+    $signatureComponents = $verifyEmailHelper->generateSignature(
+      'api_app_verify_email',
+      strval($newUser->getId()),
+      $newUser->getEmail(),
+      ['id' => $newUser->getId()]
+    );
 
+    $urlVerificacion = $signatureComponents->getSignedUrl();
+
+
+    $token = $this->JWTManager->create($newUser);
+    // TODO: Falta añadir la url de verificación al email cuando lo envíamos!!
     // --> Enviar EMAIL (lo dejo comentado para descomentar solo cuando haga falta enviar un email de verdad)
     /* try {
       $transport = Transport::fromDsn($_ENV['MAILER_DSN']); // Tenemos que poner en .env esta variable: MAILER_DSN=smtp://letsmove.murcia@gmail.com:PASSWORD@smtp.gmail.com:587 (Password está en el drive)
@@ -105,6 +119,30 @@ class RegistrationController extends AbstractController {
     return $this->json(['ok' => 'Te has registrado correctamente', 'results' => ['token' => $token, 'name' => $newUser->getNombre(), 'email' => $newUser->getEmail(), 'picture' => null]]);
   }
 
+  #[Route('/verify/email', name: 'app_verify_email')]
+  public function verifyUserEmail(Request $request, VerifyEmailHelperInterface $verifyEmailHelper, UserRepository $userRepository, EntityManagerInterface $entityManager): JsonResponse {
+    $user = $userRepository->find($request->query->get('id'));
+    if (!$user) {
+      return $this->json(['error' => 'No se encuentra ese usuario']);
+    }
+    try {
+      $verifyEmailHelper->validateEmailConfirmation(
+        $request->getUri(),
+        $user->getId(),
+        $user->getEmail(),
+      );
+
+        $user->setIsVerified(true);
+        $user->setRoles(['ROLE_USER', 'ROLE_VERIFIED']);
+        $entityManager->flush();
+
+    } catch (VerifyEmailExceptionInterface $e) {
+      $this->addFlash('error', $e->getReason());
+      return $this->json(['error' => 'Ha ocurrido un error al verificar el email']);
+    }
+    return $this->json(['ok' => 'Email verificado correctamente']);
+  }
+
   private function verifyRequiredFields($dataBody) {
     $requiredFields = ['email', 'password', 'name', 'surname', 'phone'];
 
@@ -116,6 +154,7 @@ class RegistrationController extends AbstractController {
 
     return null;
   }
+
 }
 
 /* TODO
