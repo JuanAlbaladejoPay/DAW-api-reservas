@@ -56,7 +56,7 @@ class ReservaController extends AbstractController {
           'nombreInstalacion' => $instalacion->getNombre(),
         ];
       }
-      return $this->json(["ok" => 'Todo ha ido correcto' , 'results' => $reservasJSON]);
+      return $this->json(["ok" => 'Todo ha ido correcto', 'results' => $reservasJSON]);
     }
 
     return $this->json(['ok' => 'No hay reservas para el usuario con email ', 'results' => 0]);
@@ -80,7 +80,7 @@ class ReservaController extends AbstractController {
           'nombreInstalacion' => $instalacion->getNombre(),
         ];
       }
-      return $this->json(["ok" => 'Todo ha ido correcto' , 'results' => $reservasJSON]);
+      return $this->json(["ok" => 'Todo ha ido correcto', 'results' => $reservasJSON]);
     }
 
     return $this->json(['ok' => 'No hay reservas para el usuario con email ', 'results' => 0]);
@@ -181,14 +181,25 @@ class ReservaController extends AbstractController {
     return $this->json(['message' => "Reserva <{$reserva->getId()}> actualizada correctamente"]);
   }
 
-  #[Route('/{id}', name: 'app_reserva_delete', methods: ['POST'])]
-  public function delete(Request $request, Reserva $reserva, EntityManagerInterface $entityManager): Response {
-    if ($this->isCsrfTokenValid('delete' . $reserva->getId(), $request->request->get('_token'))) {
-      $entityManager->remove($reserva);
-      $entityManager->flush();
+  #[Route('/delete/{id}', name: 'app_reserva_delete', methods: ['POST'])]
+  public function delete($id, ReservaRepository $reservaRepository, EntityManagerInterface $entityManager): Response {
+    $reserva = $reservaRepository->find($id);
+
+    if (!$reserva) {
+      return $this->json(['message' => "La reserva con id <{$id}> no existe"], 404);
     }
 
-    return $this->redirectToRoute('app_reserva_index', [], Response::HTTP_SEE_OTHER);
+    // Comprueba si el usuario actual tiene permiso para eliminar la reserva
+    /** @var \App\Entity\User $usuarioActual */
+    $usuarioActual = $this->getUser();
+    if ($reserva->getIdUsuario() !== $usuarioActual) {
+      return $this->json(['message' => "No tienes permiso para eliminar esta reserva"], 403);
+    }
+
+    $entityManager->remove($reserva);
+    $entityManager->flush();
+
+    return $this->json(['message' => "Reserva <{$reserva->getId()}> eliminada correctamente"]);
   }
 }
 
