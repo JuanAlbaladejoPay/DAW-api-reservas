@@ -40,7 +40,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface {
   private ?string $picture = null;
 
   #[ORM\Column]
-  private ?bool $isVerified = false;
+  private ?bool $verified = false;
 
   public function getId(): ?int {
     return $this->id;
@@ -62,7 +62,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface {
    * @see UserInterface
    */
   public function getUserIdentifier(): string {
-    return (string) $this->email;
+    return (string)$this->email;
   }
 
   /**
@@ -133,27 +133,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface {
     return $this;
   }
 
-  public function getPicture(): ?string
-  {
-      return $this->picture;
+  public function getPicture(): ?string {
+    return $this->picture;
   }
 
-  public function setPicture(?string $picture): static
-  {
-      $this->picture = $picture;
+  public function setPicture(?string $picture): static {
+    $this->picture = $picture;
 
-      return $this;
+    return $this;
   }
 
-  public function isIsVerified(): ?bool
-  {
-      return $this->isVerified;
+  public function isVerified(): ?bool {
+    return $this->verified;
   }
 
-  public function setIsVerified(bool $isVerified): static
-  {
-      $this->isVerified = $isVerified;
+  public function setVerified(bool $verified): static {
+    $this->verified = $verified;
 
-      return $this;
+    return $this;
   }
 }
