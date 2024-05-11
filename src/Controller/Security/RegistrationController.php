@@ -93,16 +93,16 @@ class RegistrationController extends AbstractController {
     $token = $this->JWTManager->create($newUser);
     // TODO: Falta añadir la url de verificación al email cuando lo envíamos!!
     // --> Enviar EMAIL (lo dejo comentado para descomentar solo cuando haga falta enviar un email de verdad)
-    /*    try {
-          $transport = Transport::fromDsn($_ENV['MAILER_DSN']); // Tenemos que poner en .env esta variable: MAILER_DSN=smtp://letsmove.murcia@gmail.com:PASSWORD@smtp.gmail.com:587 (Password está en el drive)
-          $mailer = new Mailer($transport);
+    /* try {
+      $transport = Transport::fromDsn($_ENV['MAILER_DSN']); // Tenemos que poner en .env esta variable: MAILER_DSN=smtp://letsmove.murcia@gmail.com:PASSWORD@smtp.gmail.com:587 (Password está en el drive)
+      $mailer = new Mailer($transport);
 
-          // Crear el correo electrónico
-          $email = (new Email())
-            ->from('letsmove.murcia@gmail.com')
-            ->to($newUser->getEmail())
-            ->subject('¡Bienvenido a LetsMove!')
-            ->html("
+      // Crear el correo electrónico
+      $email = (new Email())
+        ->from('letsmove.murcia@gmail.com')
+        ->to($newUser->getEmail())
+        ->subject('¡Bienvenido a LetsMove!')
+        ->html("
                 <h1>¡Bienvenido a LetsMove!</h1>
                 <p>¡Gracias por registrarte en nuestro sitio!</p>
                 <p>Estamos emocionados de tenerte con nosotros. Aquí podrás encontrar las mejores actividades deportivas en tu área.</p>
@@ -111,12 +111,12 @@ class RegistrationController extends AbstractController {
                 <p>Verifica tu cuenta en: {$urlVerificacion}</p>
             ");
 
-          // Enviar el correo electrónico
-          $mailer->send($email);
+      // Enviar el correo electrónico
+      $mailer->send($email);
 
-        } catch (\Exception $e) {
-          return $this->json(['error' => "Ha ocurrido un error al enviar el email $e"], 500);
-        }*/
+    } catch (\Exception $e) {
+      return $this->json(['error' => "Ha ocurrido un error al enviar el email $e"], 500);
+    }*/
 
     return $this->json(['ok' => 'Te has registrado correctamente', 'message' => 'Se ha enviado un email de verificacion a tu correo']);
   }
