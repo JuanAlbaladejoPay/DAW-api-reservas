@@ -18,6 +18,14 @@ class LoginSuccessHandler implements AuthenticationSuccessHandlerInterface {
   public function onAuthenticationSuccess(Request $request, TokenInterface $token): JsonResponse {
     /** @var \App\Entity\User $user */
     $user = $token->getUser();
+
+    if ($user->isIsVerified() === false) {
+      return new JsonResponse([
+        'code' => 403,
+        'error' => 'Debes verificar tu cuenta antes de iniciar sesión'
+      ], 403);
+    }
+
     $jwt = $this->JWTManager->create($user);
 
     return new JsonResponse([

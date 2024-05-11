@@ -40,4 +40,4 @@ security:
     - { path: ^/api, roles: ROLE_VERIFIED }
 
 # TODO:
-# - Proteger todas las rutas (ahora no mostramos nada hasta que no hacemos Login, por lo que podemos pedir TOKEN para recibir instalaciones, reservas, etc)
+# - Es mejor que el login esté restringido para ROLE_VERIFIED y que solo cuadno se verifiquen entonces puedan hacer login? O que al menos dejen hacer login, y ya dentro del controlador entonces ver si no está verificado que devuelva un JSON diciendo que tiene que verificarse
