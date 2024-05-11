@@ -10,16 +10,6 @@ Luego, debe **editar el archivo .env** y establecer los valores correctos para s
 
 ## 2º Instalar las dependencias de Composer: Esto instalará todas las dependencias PHP necesarias para el proyecto.
 
-**composer require jms/serializer-bundle**
-
-**composer require friendsofsymfony/rest-bundle**
-
-**composer require symfony/maker-bundle**
-
-**composer require symfony/orm-pack --with-all-dependencies**
-
-**composer require lexik/jwt-authentication-bundle**
-
 **composer install**
 
 ## 3º Generar las claves JWT: Como las claves JWT no están en el repositorio, tu compañero necesitará generar las suyas propias.
@@ -47,9 +37,9 @@ Durante la generación, se le pedirá que proporcione una frase de contraseña. 
 
 **php bin/console doctrine:migrations:migrate**
 
-## 5º Para permitir CORS con nuestro proyecto de frontend:
+## 5º Para permitir CORS con nuestro proyecto de frontend utilizamos nelmio/cors-bundle:
 
-**composer require nelmio/cors-bundle**
+Ese paquete se instala al hacer composer install (ya que lo tenemos previamente en el composer.json)
 
 Y modificamos el fichero /config/packages/nelmio_cors.yaml:
 
