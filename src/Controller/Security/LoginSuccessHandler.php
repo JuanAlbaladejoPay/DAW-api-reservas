@@ -19,7 +19,7 @@ class LoginSuccessHandler implements AuthenticationSuccessHandlerInterface {
     /** @var \App\Entity\User $user */
     $user = $token->getUser();
 
-    if ($user->isIsVerified() === false) {
+    if ($user->isVerified() === false) {
       return new JsonResponse([
         'code' => 403,
         'error' => 'Debes verificar tu cuenta antes de iniciar sesión'
