@@ -37,6 +37,10 @@ security:
     - { path: ^/api/verify/email, roles: PUBLIC_ACCESS }
     - { path: ^/api/login, roles: PUBLIC_ACCESS }
     - { path: ^/api/login-google, roles: PUBLIC_ACCESS }
+    - { path: ^/api/instalaciones/all, roles: ROLE_VERIFIED }
+    - { path: ^/api/instalaciones/edit, roles: ROLE_ADMIN }
+    - { path: ^/api/instalaciones/delete, roles: ROLE_ADMIN }
+    - { path: ^/api/instalaciones/new, roles: ROLE_ADMIN }
     - { path: ^/api, roles: ROLE_VERIFIED }
 
 # TODO:
