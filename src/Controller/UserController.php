@@ -21,50 +21,6 @@ class UserController extends AbstractController {
     ]);
   }
 
-  /*   #[Route('/register', name: 'user_register', methods: ['POST'])] // Creo que hay que poner solo POST
-  public function register(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): Response {
-    $user = new User();
-    $dataBody = json_decode($request->getContent(), true); // Obtenemos los datos de la petición en un array asociativo (al pasar TRUE como parámetro)
-
-    $email = $dataBody['email'];
-    $hashedPassword = $passwordHasher->hashPassword($user, $dataBody['password']); // Con esto hasheamos la password
-    $name = $dataBody['name'];
-    $surname = $dataBody['surname'];
-    $phone = $dataBody['phone'];
-
-    $user->setEmail($email);
-    $user->setRoles(['ROLE_USER']); // Por defecto, todos los usuarios son ROLE_USER (se podría cambiar en el formulario de registro
-    $user->setPassword($hashedPassword);
-    $user->setNombre($name);
-    $user->setApellidos($surname);
-    $user->setTelefono($phone);
-
-    $entityManager->persist($user);
-    $entityManager->flush();
-
-    return $this->json("Usuario creado correctamente", Response::HTTP_CREATED);
-    // Sería conveniente pasar por aquí la ruta de destino o en el cliente lo hacemos?
-  } */
-
-  #[Route('/new', name: 'app_user_new', methods: ['GET', 'POST'])]
-  public function new(Request $request, EntityManagerInterface $entityManager): Response {
-    $user = new User();
-    $form = $this->createForm(UserType::class, $user);
-    $form->handleRequest($request);
-
-    if ($form->isSubmitted() && $form->isValid()) {
-      $entityManager->persist($user);
-      $entityManager->flush();
-
-      return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
-    }
-
-    return $this->renderForm('user/new.html.twig', [
-      'user' => $user,
-      'form' => $form,
-    ]);
-  }
-
   #[Route('/{id}', name: 'app_user_show', methods: ['GET'])]
   public function show(User $user): Response {
     return $this->render('user/show.html.twig', [
@@ -102,6 +58,7 @@ class UserController extends AbstractController {
 
     /* 
     TODO:
+    - Controlar las rutas a las que puede acceder un usuario
     - Se podría añadir esto para manejar errores 
     
     try { 
