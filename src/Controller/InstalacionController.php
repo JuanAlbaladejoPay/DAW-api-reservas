@@ -76,4 +76,5 @@ class InstalacionController extends AbstractController {
 
 /* TODO
 - Implementar la lógica de borrado de una instalación
+- Comprobar que las rutas bloquean acceso a los usuarios que no son admins a los métodos new, delete y edit
 */
