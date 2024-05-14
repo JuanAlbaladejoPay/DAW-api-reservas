@@ -6,6 +6,7 @@ use App\Entity\Reserva;
 use App\Form\ReservaType;
 use App\Repository\ReservaRepository;
 use App\Repository\InstalacionRepository;
+use App\Service\UserService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,6 +16,16 @@ use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/api/reservas')]
 class ReservaController extends AbstractController {
+  private $reservaRepository;
+  private $entityManager;
+  private $userService;
+
+  public function __construct(ReservaRepository $reservaRepository, EntityManagerInterface $entityManager, UserService $userService) {
+    $this->reservaRepository = $reservaRepository;
+    $this->entityManager = $entityManager;
+    $this->userService = $userService;
+  }
+
   #[Route('/all', name: 'app_reserva_index', methods: ['GET'])]
   public function index(ReservaRepository $reservaRepository): JsonResponse {
     $reservas = $reservaRepository->findAll();
@@ -35,12 +46,12 @@ class ReservaController extends AbstractController {
   }
 
   #[Route('/userEmail', name: 'app_reservas_usuario', methods: ['GET'])]
-  public function showUserReservations(ReservaRepository $reservaRepository, Request $request, InstalacionRepository $instalacionRepository): JsonResponse {
+  public function showUserReservations(InstalacionRepository $instalacionRepository): JsonResponse {
 
     /** @var \App\Entity\User $user */
     $user = $this->getUser();
 
-    $reservas = $reservaRepository->findBy(['idUsuario' => $user->getId()]);
+    $reservas = $this->reservaRepository->findBy(['idUsuario' => $user->getId()]);
 
     if (count($reservas) > 0) {
       $reservasJSON = [];
@@ -63,8 +74,8 @@ class ReservaController extends AbstractController {
   }
 
   #[Route('/idInstalacion={idInstalacion}', name: 'app_reservationsByInstallation', methods: ['GET'])]
-  public function showReservationsByInstallation($idInstalacion, ReservaRepository $reservaRepository, Request $request, InstalacionRepository $instalacionRepository): JsonResponse {
-    $reservas = $reservaRepository->findBy(['idInstalacion' => $idInstalacion]);
+  public function showReservationsByInstallation($idInstalacion, InstalacionRepository $instalacionRepository): JsonResponse {
+    $reservas = $this->reservaRepository->findBy(['idInstalacion' => $idInstalacion]);
 
     if (count($reservas) > 0) {
       $reservasJSON = [];
@@ -87,7 +98,7 @@ class ReservaController extends AbstractController {
   }
 
   #[Route('/new', name: 'app_reserva_new', methods: ['GET', 'POST'])]
-  public function new(Request $request, EntityManagerInterface $entityManager, ReservaRepository $reservaRepository, InstalacionRepository $instalacionRepository): JsonResponse {
+  public function new(Request $request, InstalacionRepository $instalacionRepository): JsonResponse {
     $reserva = new Reserva();
     // "type hinting" a tu objeto $usuarioActual como instancia de tu clase User. Esto le indicará a tu IDE que el objeto es una instancia de User y debería permitirte acceder a los métodos definidos en esa clase.
     /** @var \App\Entity\User $usuarioActual */
@@ -102,51 +113,23 @@ class ReservaController extends AbstractController {
     $instalacion = $instalacionRepository->find($idInstalacion);
 
     // Compruebo si ya existe una reserva para esa instalación en esa fecha y hora
-    $fechaInicioComprobacion = (clone $fechaYHora)->modify('-60 minutes');
-    $fechaFinComprobacion = (clone $fechaYHora)->modify("+$duracion minutes");
-    $reservasExistentes = $reservaRepository->findReservasByDayAndHour($fechaInicioComprobacion, $fechaFinComprobacion, $idInstalacion);
-
-    if (count($reservasExistentes) > 0) {
-      // aquí tendríamos que comprobar si la duración de la reserva anterior es 60min (en caso de ser 60 no habría problema) pero si es 90min o más, no se podría hacer la reserva
-      foreach ($reservasExistentes as $reservaExist) {
-        $horaInicioExistente = $reservaExist->getFechaYHora()->getTimestamp();
-        $horaFinExistente = (clone $reservaExist->getFechaYHora())->modify("+{$reservaExist->getDuracion()} minutes")->getTimestamp();
-        $horaInicioNueva = $fechaYHora->getTimestamp();
-        $horaFinNueva = $fechaFinComprobacion->getTimestamp();
-        // - Hora de la antigua reserva === Hora de la nueva reserva
-        if ($horaInicioExistente == $horaInicioNueva) {
-          return $this->json(['message' => 'Ya existe una reserva para esa instalación en esa fecha y hora'], Response::HTTP_CONFLICT);
-        }
-        // - Hora de la antigua reserva < Hora de la nueva reserva && hora fin existente > hora inicio nueva
-        if ($horaInicioExistente < $horaInicioNueva && $horaFinExistente > $horaInicioNueva) {
-          return $this->json(['message' => 'Ya existe una reserva para esa instalación en esa fecha y hora'], Response::HTTP_CONFLICT);
-        }
-        // - Hora de la antigua reserva > Hora de la nueva reserva && dura > 60
-        if ($horaInicioExistente > $horaInicioNueva && $horaFinNueva > $horaInicioExistente) {
-          return $this->json(['message' => 'Ya existe una reserva para esa instalación en esa fecha y hora'], Response::HTTP_CONFLICT);
-        }
-      }
+    $exists = $this->checkIfAReservationExists($fechaYHora, $duracion, $idInstalacion);
+    if ($exists) {
+      return $this->json(['message' => 'Ya existe una reserva para esa instalación en esa fecha y hora'], Response::HTTP_CONFLICT);
     }
 
-    // Si no hemos lanzado ningún error todo está OK, entonces lo insertamos en la BD
+    // Si no hemos lanzado ningún error, está OK, entonces lo insertamos en la BD
     $reserva->setFechaYHora($fechaYHora); // hay que pasarle la fecha y hora juntas (DateTime
     $reserva->setDuracion($duracion);
     $reserva->setImporte($importe);
     $reserva->setIdUsuario($usuarioActual); // hay que pasarle el objeto usuario completo
     $reserva->setIdInstalacion($instalacion); // hay que pasarle el objeto instalación completo
 
-    $entityManager->persist($reserva);
-    $entityManager->flush();
+    $this->entityManager->persist($reserva);
+    $this->entityManager->flush();
 
     return $this->json(['message' => 'Reserva creada correctamente']);
   }
-  // Para probar el new Reserva he hecho
-  // 13.30 - 90min X
-  // 13.30 - 60 min V
-  // 14.00 - 60/90 min X
-  // 15.00 - 60/90 min X
-  // 15.30 - 60/90 min X
-  // 16.00 - 60/90 min X
 
   #[Route('/{id}', name: 'app_reserva_show', methods: ['GET'])]
   public function show(Reserva $reserva): JsonResponse {
@@ -162,48 +145,82 @@ class ReservaController extends AbstractController {
     return $this->json(["reserva" => $reservaInfo]);
   }
 
-  #[Route('/{id}/edit', name: 'app_reserva_edit', methods: ['GET', 'POST'])]
-  public function edit(Request $request, Reserva $reserva, EntityManagerInterface $entityManager): JsonResponse {
-    $dataBody = json_decode($request->getContent(), true);
+  /*  #[Route('/{id}/edit', name: 'app_reserva_edit', methods: ['GET', 'POST'])]
+    public function edit(Request $request, Reserva $reserva): JsonResponse {
+      $dataBody = json_decode($request->getContent(), true);
 
-    $fechaYHora = new \DateTime($dataBody['fecha'] . ' ' . $dataBody['hora']);
-    $duracion = $dataBody['duracion'];
-    $importe = $dataBody['importe'];
-    $idInstalacion = $dataBody['idInstalacion'];
+      $fechaYHora = new \DateTime($dataBody['fecha'] . ' ' . $dataBody['hora']);
+      $duracion = $dataBody['duracion'];
+      $importe = $dataBody['importe'];
+      $idInstalacion = $dataBody['idInstalacion'];
 
-    $reserva->setFechaYHora($fechaYHora);
-    $reserva->setDuracion($duracion);
-    $reserva->setImporte($importe);
-    $reserva->setIdInstalacion($idInstalacion);
+      $reserva->setFechaYHora($fechaYHora);
+      $reserva->setDuracion($duracion);
+      $reserva->setImporte($importe);
+      $reserva->setIdInstalacion($idInstalacion);
 
-    $entityManager->flush();
+      $this->entityManager->flush();
 
-    return $this->json(['message' => "Reserva <{$reserva->getId()}> actualizada correctamente"]);
-  }
+      return $this->json(['message' => "Reserva <{$reserva->getId()}> actualizada correctamente"]);
+    }*/
 
   #[Route('/delete/{id}', name: 'app_reserva_delete', methods: ['POST'])]
-  public function delete($id, ReservaRepository $reservaRepository, EntityManagerInterface $entityManager): Response {
-    $reserva = $reservaRepository->find($id);
+  public function delete($id): Response {
+    $reserva = $this->reservaRepository->find($id);
 
     if (!$reserva) {
       return $this->json(['message' => "La reserva con id <{$id}> no existe"], 404);
     }
 
-    // Comprueba si el usuario actual tiene permiso para eliminar la reserva
+    // Comprueba si el usuario actual tiene permiso para eliminar la reserva (si es admin puede)
     /** @var \App\Entity\User $usuarioActual */
     $usuarioActual = $this->getUser();
-    if ($reserva->getIdUsuario() !== $usuarioActual) {
+    $prim = $reserva->getIdUsuario()->getId() !== $usuarioActual->getId();
+    $seg = $this->userService->isAdmin() === false;
+    if ($reserva->getIdUsuario()->getId() !== $usuarioActual->getId() && $this->userService->isAdmin() === false) {
       return $this->json(['message' => "No tienes permiso para eliminar esta reserva"], 403);
     }
 
-    $entityManager->remove($reserva);
-    $entityManager->flush();
+    $this->entityManager->remove($reserva);
+    $this->entityManager->flush();
 
     return $this->json(['message' => "Reserva <{$reserva->getId()}> eliminada correctamente"]);
   }
+
+  // Util functions
+  private function checkIfAReservationExists(\DateTime $fechaYHora, string $duracion, string $idInstalacion): bool {
+    $fechaInicioComprobacion = (clone $fechaYHora)->modify('-60 minutes');
+    $fechaFinComprobacion = (clone $fechaYHora)->modify("+$duracion minutes");
+    $reservasExistentes = $this->reservaRepository->findReservasByDayAndHour($fechaInicioComprobacion, $fechaFinComprobacion, $idInstalacion);
+
+    if (count($reservasExistentes) > 0) {
+      // aquí tendríamos que comprobar si la duración de la reserva anterior es 60min (en caso de ser 60 no habría problema) pero si es 90min o más, no se podría hacer la reserva
+      foreach ($reservasExistentes as $reservaExist) {
+        $horaInicioExistente = $reservaExist->getFechaYHora()->getTimestamp();
+        $horaFinExistente = (clone $reservaExist->getFechaYHora())->modify("+{$reservaExist->getDuracion()} minutes")->getTimestamp();
+        $horaInicioNueva = $fechaYHora->getTimestamp();
+        $horaFinNueva = $fechaFinComprobacion->getTimestamp();
+        // - Hora de la antigua reserva === Hora de la nueva reserva
+        if ($horaInicioExistente == $horaInicioNueva) {
+          return true;
+        }
+        // - Hora de la antigua reserva < Hora de la nueva reserva && hora fin existente > hora inicio nueva
+        if ($horaInicioExistente < $horaInicioNueva && $horaFinExistente > $horaInicioNueva) {
+          return true;
+        }
+        // - Hora de la antigua reserva > Hora de la nueva reserva && dura > 60
+        if ($horaInicioExistente > $horaInicioNueva && $horaFinNueva > $horaInicioExistente) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
 }
 
 /* TODO
 - Editar el método de DELETE reservas, la ruta habrá que modificarla ahora mismo está /id
 - Repasar método EDIT
+- Utilizar CARBON librería de PHP para trabajar con fechas??
 */
