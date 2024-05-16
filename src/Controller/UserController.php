@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
+
 #[Route('/api/user')]
 class UserController extends AbstractController {
   #[Route('/', name: 'app_user_index', methods: ['GET'])]
@@ -98,6 +99,42 @@ class UserController extends AbstractController {
 
     return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
   }
+
+  #[Route('/update/{id}', name: 'app_user_update', methods: ['PATCH'])]
+  public function update($id, Request $request, UserRepository $userRepository, EntityManagerInterface $entityManager): Response {
+    $user = $userRepository->find($id);
+
+    if (!$user) {
+      return $this->json(['message' => "El usuario con id <{$id}> no existe"], 404);
+    }
+
+    // Comprueba si el usuario actual tiene permiso para actualizar el usuario
+    /** @var \App\Entity\User $usuarioActual */
+    $usuarioActual = $this->getUser();
+    if ($user->getId() !== $usuarioActual->getId()) {
+      return $this->json(['message' => "No tienes permiso para actualizar este usuario"], 403);
+    }
+
+    // Obtiene los datos de la solicitud
+    $data = json_decode($request->getContent(), true);
+    
+    // Actualiza los campos del usuario
+    if (isset($data['nombre'])) {
+      $user->setNombre($data['nombre']);
+    }
+    if (isset($data['apellidos'])) {
+      $user->setApellidos($data['apellidos']);
+    }
+    if (isset($data['telefono'])) {
+      $user->setTelefono($data['telefono']);
+    }
+
+    // Guarda los cambios en la base de datos
+    $entityManager->flush();
+
+    return $this->json(['message' => "Usuario <{$user->getId()}> actualizado correctamente"]);
+  }
+
 }
 
     /* 
