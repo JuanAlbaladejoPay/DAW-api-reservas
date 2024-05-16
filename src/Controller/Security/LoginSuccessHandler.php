@@ -34,6 +34,9 @@ class LoginSuccessHandler implements AuthenticationSuccessHandlerInterface {
         'email' => $user->getEmail(),
         'token' => $jwt,
         'name' => $user->getNombre(),
+        'surname' => $user->getApellidos(),
+        'phone' => $user->getTelefono(),
+        'id' => $user->getId(),
         'picture' => null
       ]
     ]);
