@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -36,11 +37,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface {
   #[ORM\Column(nullable: true)]
   private ?int $telefono = null;
 
-  #[ORM\Column(length: 255, nullable: true)]
-  private ?string $picture = null;
-
   #[ORM\Column]
   private ?bool $verified = false;
+
+  #[ORM\Column(type: Types::BLOB, nullable: true)]
+  private $picture = null;
 
   public function getId(): ?int {
     return $this->id;
@@ -133,16 +134,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface {
     return $this;
   }
 
-  public function getPicture(): ?string {
-    return $this->picture;
-  }
-
-  public function setPicture(?string $picture): static {
-    $this->picture = $picture;
-
-    return $this;
-  }
-
   public function isVerified(): ?bool {
     return $this->verified;
   }
@@ -151,5 +142,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface {
     $this->verified = $verified;
 
     return $this;
+  }
+
+  public function getPicture()
+  {
+      return $this->picture;
+  }
+
+  public function setPicture($picture): static
+  {
+      $this->picture = $picture;
+
+      return $this;
   }
 }
