@@ -37,7 +37,7 @@ class LoginSuccessHandler implements AuthenticationSuccessHandlerInterface {
         'surname' => $user->getApellidos(),
         'phone' => $user->getTelefono(),
         'id' => $user->getId(),
-        'picture' => null
+        'picture' => $user->getPicture()
       ]
     ]);
   }
