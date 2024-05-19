@@ -42,7 +42,7 @@ class ReservaController extends AbstractController {
       ];
     }
 
-    return $this->json(["reservas" => $reservasArray]);
+    return $this->json(['ok' => 'Todo ha ido correctamente', "results" => $reservasArray]);
   }
 
   #[Route('/userEmail', name: 'app_reservas_usuario', methods: ['GET'])]
@@ -70,7 +70,7 @@ class ReservaController extends AbstractController {
       return $this->json(["ok" => 'Todo ha ido correcto', 'results' => $reservasJSON]);
     }
 
-    return $this->json(['ok' => 'No hay reservas para el usuario con email ', 'results' => 0]);
+    return $this->json(['ok' => 'No hay reservas para el usuario con email ', 'results' => []]);
   }
 
   #[Route('/idInstalacion={idInstalacion}', name: 'app_reservationsByInstallation', methods: ['GET'])]
@@ -175,8 +175,7 @@ class ReservaController extends AbstractController {
     // Comprueba si el usuario actual tiene permiso para eliminar la reserva (si es admin puede)
     /** @var \App\Entity\User $usuarioActual */
     $usuarioActual = $this->getUser();
-    $prim = $reserva->getIdUsuario()->getId() !== $usuarioActual->getId();
-    $seg = $this->userService->isAdmin() === false;
+
     if ($reserva->getIdUsuario()->getId() !== $usuarioActual->getId() && $this->userService->isAdmin() === false) {
       return $this->json(['message' => "No tienes permiso para eliminar esta reserva"], 403);
     }
@@ -184,7 +183,7 @@ class ReservaController extends AbstractController {
     $this->entityManager->remove($reserva);
     $this->entityManager->flush();
 
-    return $this->json(['message' => "Reserva <{$reserva->getId()}> eliminada correctamente"]);
+    return $this->json(['ok'=>'Todo correcto','results' => "Reserva <{$reserva->getId()}> eliminada correctamente"]);
   }
 
   // Util functions
