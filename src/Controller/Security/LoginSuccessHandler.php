@@ -2,6 +2,7 @@
 
 namespace App\Controller\Security;
 
+use App\Service\UserService;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -10,9 +11,11 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationSuccessHandlerI
 
 class LoginSuccessHandler implements AuthenticationSuccessHandlerInterface {
   private $JWTManager;
+  private $userService;
 
-  public function __construct(JWTTokenManagerInterface $JWTManager) {
+  public function __construct(JWTTokenManagerInterface $JWTManager, UserService $userService) {
     $this->JWTManager = $JWTManager;
+    $this->userService = $userService;
   }
 
   public function onAuthenticationSuccess(Request $request, TokenInterface $token): JsonResponse {
@@ -37,7 +40,8 @@ class LoginSuccessHandler implements AuthenticationSuccessHandlerInterface {
         'surname' => $user->getApellidos(),
         'phone' => $user->getTelefono(),
         'id' => $user->getId(),
-        'picture' => null
+        'picture' => null,
+        'isAdmin' => $this->userService->isAdmin()
       ]
     ]);
   }

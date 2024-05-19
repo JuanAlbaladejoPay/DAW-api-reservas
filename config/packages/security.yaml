@@ -37,11 +37,11 @@ security:
     - { path: ^/api/verify/email, roles: PUBLIC_ACCESS }
     - { path: ^/api/login, roles: PUBLIC_ACCESS }
     - { path: ^/api/login-google, roles: PUBLIC_ACCESS }
-    - { path: ^/api/instalaciones/all, roles: ROLE_VERIFIED }
+    - { path: ^/api/instalaciones/all, roles: [ ROLE_VERIFIED, ROLE_ADMIN ] }
     - { path: ^/api/instalaciones/edit, roles: ROLE_ADMIN }
     - { path: ^/api/instalaciones/delete, roles: ROLE_ADMIN }
     - { path: ^/api/instalaciones/new, roles: ROLE_ADMIN }
-    - { path: ^/api, roles: ROLE_VERIFIED }
+    - { path: ^/api, roles: [ ROLE_VERIFIED, ROLE_ADMIN ] }
 
 # TODO:
 # - Es mejor que el login esté restringido para ROLE_VERIFIED y que solo cuadno se verifiquen entonces puedan hacer login? O que al menos dejen hacer login, y ya dentro del controlador entonces ver si no está verificado que devuelva un JSON diciendo que tiene que verificarse

@@ -18,7 +18,8 @@ class InstalacionController extends AbstractController {
   public function index(InstalacionRepository $instalacionRepository): JsonResponse {
 
     return $this->json([
-      'instalaciones' => $instalacionRepository->findAll(),
+      'ok' => 'Todo ha ido correcto',
+      'results' => $instalacionRepository->findAll(),
     ]);
   }
 
@@ -38,17 +39,10 @@ class InstalacionController extends AbstractController {
     $entityManager->flush();
 
     // Insertar nueva instalación (igual que con user)
-    return $this->json(['message' => 'Instalación creada correctamente']);
+    return $this->json(['ok' => 'Instalación creada correctamente', 'results' => "Instalación <{$instalacion->getId()}> creada correctamente"]);
   }
 
-  #[Route('/{id}', name: 'app_instalacion_show', methods: ['GET'])]
-  public function show(Instalacion $instalacion): JsonResponse {
-
-
-    return $this->json(["instalacion" => $instalacion]);
-  }
-
-  #[Route('/{id}/edit', name: 'app_instalacion_edit', methods: ['GET', 'POST'])]
+  #[Route('/edit/{id}', name: 'app_instalacion_edit', methods: ['PATCH'])]
   public function edit(Request $request, Instalacion $instalacion, EntityManagerInterface $entityManager): Response {
     $dataBody = json_decode($request->getContent(), true);
 
@@ -60,17 +54,15 @@ class InstalacionController extends AbstractController {
 
     $entityManager->flush();
 
-    return $this->json(['message' => "Instalación <{$instalacion->getId()}> actualizada correctamente"]);
+    return $this->json(['ok' => 'Instalación modificada correctamente','results' => "Instalación <{$instalacion->getId()}> actualizada correctamente"]);
   }
 
-  #[Route('/{id}', name: 'app_instalacion_delete', methods: ['POST'])]
-  public function delete(Request $request, Instalacion $instalacion, EntityManagerInterface $entityManager): Response {
-    if ($this->isCsrfTokenValid('delete' . $instalacion->getId(), $request->request->get('_token'))) {
-      $entityManager->remove($instalacion);
-      $entityManager->flush();
-    }
+  #[Route('/delete/{id}', name: 'app_instalacion_delete', methods: ['POST'])]
+  public function delete(Instalacion $instalacion, EntityManagerInterface $entityManager): Response {
+    $entityManager->remove($instalacion);
+    $entityManager->flush();
 
-    return $this->redirectToRoute('app_instalacion_index', [], Response::HTTP_SEE_OTHER);
+    return $this->json(['ok' => 'La instalación se ha borrado correctamente' , 'results' => "Instalación <{$instalacion->getId()}> eliminada correctamente"]);
   }
 }
 
