@@ -3,6 +3,7 @@
 namespace App\Controller\Security;
 // He añadio \Security
 
+use App\Service\UserService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\ORM\EntityManagerInterface;
@@ -11,6 +12,7 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use App\Entity\User;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
+
 //use Google_Client;
 
 // composer require google/apiclient:"^2.0"
@@ -18,9 +20,11 @@ use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 #[Route('/api', name: 'api_')]
 class GoogleController extends AbstractController {
   private $JWTManager;
+  private $userService;
 
-  public function __construct(JWTTokenManagerInterface $JWTManager) {
+  public function __construct(JWTTokenManagerInterface $JWTManager, UserService $userService) {
     $this->JWTManager = $JWTManager;
+    $this->userService = $userService;
   }
 
   #[Route('/login-google', name: 'login-google', methods: 'POST')]
@@ -28,10 +32,6 @@ class GoogleController extends AbstractController {
     $data = json_decode($request->getContent(), true);
     $token = $data['token'];
 
-    /*    $client = new Google_Client(['client_id' => '670850869047-ctj9q23rejpe18q69nlg1afjn28elbpu.apps.googleusercontent.com']); // Aquí habría que guardar una variable de entorno con CLIENT_ID, ese client_id lo he sacado de Google Cloud (siguiendo el enlace del drive sale todo)
-        $isVerified = $client->verifyIdToken($token);
-
-        if ($isVerified) {*/
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, "https://www.googleapis.com/oauth2/v1/userinfo?access_token={$token}");
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -51,26 +51,48 @@ class GoogleController extends AbstractController {
     if ($user) {
       // El token JWT se genera a partir de la información del usuario, no de su contraseña. Por lo tanto, podemos generar un token JWT para un usuario incluso si no tiene una contraseña
       $tokenAPI = $this->JWTManager->create($user);
-      return $this->json(['ok' => 'Has iniciado sesión correctamente', 'results' => ['email' => $email, 'token' => $tokenAPI, 'name' => $name, 'picture' => $picture]]);
+      return $this->json(['ok' => 'Has iniciado sesión correctamente',
+        'results' => [
+          'email' => $email,
+          'token' => $tokenAPI,
+          'name' => $name,
+          'surname' => $surname,
+          'phone' => null,
+          'id' => $user->getId(),
+          'picture' => $picture,
+          'isAdmin' => $this->userService->isAdmin()
+        ]
+      ]);
     }
 
     // En caso de que no exista, lo insertamos en la BD y le generamos un token para que pueda hacer ya peticiones
-    if (!$user) {
-      $user = new User();
-      $user->setEmail($email);
-      $user->setRoles(['ROLE_USER']);
-      $user->setNombre($name);
-      $user->setApellidos($surname);
+
+    $user = new User();
+    $user->setEmail($email);
+    $user->setRoles(['ROLE_USER', 'ROLE_VERIFIED']);
+    $user->setNombre($name);
+    $user->setApellidos($surname);
+    $user->setVerified(true);
 //      $user->setTelefono($phone); // Lo mismo con teléfono
 //      $user->setPassword("") // Hay que ver cómo tratar lo de contraseñas cuando te registras con google
 
-      $entityManager->persist($user);
-      $entityManager->flush();
+    $entityManager->persist($user);
+    $entityManager->flush();
 
-      $token = $this->JWTManager->create($user);
-      return $this->json(['ok' => 'Te has registrado correctamente', 'results' => ['email' => $email, 'token' => $token, 'name' => $name, 'picture' => $googleResponse['picture']]]);
-    }
-    return $this->json(['error' => 'Ha ocurrido un error']);
+    $token = $this->JWTManager->create($user);
+    return $this->json(['ok' => 'Te has registrado correctamente',
+      'results' => [
+        'email' => $email,
+        'token' => $token,
+        'name' => $name,
+        'picture' => $googleResponse['picture'],
+        'surname' => $surname,
+        'phone' => null,
+        'id' => $user->getId(),
+        'isAdmin' => $this->userService->isAdmin()
+      ]
+    ]);
+
   }
 }
 /* TODO:
