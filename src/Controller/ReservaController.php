@@ -115,7 +115,7 @@ class ReservaController extends AbstractController {
     // Compruebo si ya existe una reserva para esa instalación en esa fecha y hora
     $exists = $this->checkIfAReservationExists($fechaYHora, $duracion, $idInstalacion);
     if ($exists) {
-      return $this->json(['message' => 'Ya existe una reserva para esa instalación en esa fecha y hora'], Response::HTTP_CONFLICT);
+      return $this->json(['error' => 'Ya existe una reserva para esa instalación en esa fecha y hora'], Response::HTTP_CONFLICT);
     }
 
     // Si no hemos lanzado ningún error, está OK, entonces lo insertamos en la BD
@@ -128,48 +128,15 @@ class ReservaController extends AbstractController {
     $this->entityManager->persist($reserva);
     $this->entityManager->flush();
 
-    return $this->json(['message' => 'Reserva creada correctamente']);
+    return $this->json(['ok' => 'Reserva creada correctamente']);
   }
-
-  #[Route('/{id}', name: 'app_reserva_show', methods: ['GET'])]
-  public function show(Reserva $reserva): JsonResponse {
-    $reservaInfo = [
-      'id' => $reserva->getId(),
-      'fecha' => $reserva->getFechaYHora()->format('Y-m-d'),
-      'hora' => $reserva->getFechaYHora()->format('H:i'),
-      'duracion' => $reserva->getDuracion(),
-      'importe' => $reserva->getImporte(),
-      'idUsuario' => $reserva->getIdUsuario()->getId(),
-      'idInstalacion' => $reserva->getIdInstalacion()->getId(),
-    ];
-    return $this->json(["reserva" => $reservaInfo]);
-  }
-
-  /*  #[Route('/{id}/edit', name: 'app_reserva_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Reserva $reserva): JsonResponse {
-      $dataBody = json_decode($request->getContent(), true);
-
-      $fechaYHora = new \DateTime($dataBody['fecha'] . ' ' . $dataBody['hora']);
-      $duracion = $dataBody['duracion'];
-      $importe = $dataBody['importe'];
-      $idInstalacion = $dataBody['idInstalacion'];
-
-      $reserva->setFechaYHora($fechaYHora);
-      $reserva->setDuracion($duracion);
-      $reserva->setImporte($importe);
-      $reserva->setIdInstalacion($idInstalacion);
-
-      $this->entityManager->flush();
-
-      return $this->json(['message' => "Reserva <{$reserva->getId()}> actualizada correctamente"]);
-    }*/
 
   #[Route('/delete/{id}', name: 'app_reserva_delete', methods: ['POST'])]
   public function delete($id): Response {
     $reserva = $this->reservaRepository->find($id);
 
     if (!$reserva) {
-      return $this->json(['message' => "La reserva con id <{$id}> no existe"], 404);
+      return $this->json(['error' => "La reserva con id <{$id}> no existe"], 404);
     }
 
     // Comprueba si el usuario actual tiene permiso para eliminar la reserva (si es admin puede)
@@ -177,13 +144,13 @@ class ReservaController extends AbstractController {
     $usuarioActual = $this->getUser();
 
     if ($reserva->getIdUsuario()->getId() !== $usuarioActual->getId() && $this->userService->isAdmin() === false) {
-      return $this->json(['message' => "No tienes permiso para eliminar esta reserva"], 403);
+      return $this->json(['error' => "No tienes permiso para eliminar esta reserva"], 403);
     }
 
     $this->entityManager->remove($reserva);
     $this->entityManager->flush();
 
-    return $this->json(['ok'=>'Todo correcto','results' => "Reserva <{$reserva->getId()}> eliminada correctamente"]);
+    return $this->json(['ok'=>"Todo correcto. Reserva <{$reserva->getId()}> eliminada correctamente"]);
   }
 
   // Util functions
@@ -223,3 +190,37 @@ class ReservaController extends AbstractController {
 - Repasar método EDIT
 - Utilizar CARBON librería de PHP para trabajar con fechas??
 */
+
+/*  POR SI A CASO
+#[Route('/{id}', name: 'app_reserva_show', methods: ['GET'])]
+public function show(Reserva $reserva): JsonResponse {
+ $reservaInfo = [
+   'id' => $reserva->getId(),
+   'fecha' => $reserva->getFechaYHora()->format('Y-m-d'),
+   'hora' => $reserva->getFechaYHora()->format('H:i'),
+   'duracion' => $reserva->getDuracion(),
+   'importe' => $reserva->getImporte(),
+   'idUsuario' => $reserva->getIdUsuario()->getId(),
+   'idInstalacion' => $reserva->getIdInstalacion()->getId(),
+ ];
+ return $this->json(['ok' => 'Reserva encontrada', "results" => $reservaInfo]);
+}
+
+#[Route('/{id}/edit', name: 'app_reserva_edit', methods: ['GET', 'POST'])]
+ public function edit(Request $request, Reserva $reserva): JsonResponse {
+   $dataBody = json_decode($request->getContent(), true);
+
+   $fechaYHora = new \DateTime($dataBody['fecha'] . ' ' . $dataBody['hora']);
+   $duracion = $dataBody['duracion'];
+   $importe = $dataBody['importe'];
+   $idInstalacion = $dataBody['idInstalacion'];
+
+   $reserva->setFechaYHora($fechaYHora);
+   $reserva->setDuracion($duracion);
+   $reserva->setImporte($importe);
+   $reserva->setIdInstalacion($idInstalacion);
+
+   $this->entityManager->flush();
+
+   return $this->json(['message' => "Reserva <{$reserva->getId()}> actualizada correctamente"]);
+ }*/

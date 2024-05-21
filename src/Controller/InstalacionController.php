@@ -39,7 +39,7 @@ class InstalacionController extends AbstractController {
     $entityManager->flush();
 
     // Insertar nueva instalación (igual que con user)
-    return $this->json(['ok' => 'Instalación creada correctamente', 'results' => "Instalación <{$instalacion->getId()}> creada correctamente"]);
+    return $this->json(['ok' => "Instalación <{$instalacion->getId()}> creada correctamente"]);
   }
 
   #[Route('/edit/{id}', name: 'app_instalacion_edit', methods: ['PATCH'])]
@@ -54,7 +54,7 @@ class InstalacionController extends AbstractController {
 
     $entityManager->flush();
 
-    return $this->json(['ok' => 'Instalación modificada correctamente','results' => "Instalación <{$instalacion->getId()}> actualizada correctamente"]);
+    return $this->json(['ok' => "Instalación <{$instalacion->getId()}> actualizada correctamente"]);
   }
 
   #[Route('/delete/{id}', name: 'app_instalacion_delete', methods: ['POST'])]
@@ -62,7 +62,7 @@ class InstalacionController extends AbstractController {
     $entityManager->remove($instalacion);
     $entityManager->flush();
 
-    return $this->json(['ok' => 'La instalación se ha borrado correctamente' , 'results' => "Instalación <{$instalacion->getId()}> eliminada correctamente"]);
+    return $this->json(['ok' => "Instalación <{$instalacion->getId()}> eliminada correctamente"]);
   }
 }
 
