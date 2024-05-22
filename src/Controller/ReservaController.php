@@ -6,8 +6,10 @@ use App\Entity\Reserva;
 use App\Form\ReservaType;
 use App\Repository\ReservaRepository;
 use App\Repository\InstalacionRepository;
+use App\Service\EmailService;
 use App\Service\UserService;
 use Doctrine\ORM\EntityManagerInterface;
+use PharIo\Manifest\Email;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -19,11 +21,13 @@ class ReservaController extends AbstractController {
   private $reservaRepository;
   private $entityManager;
   private $userService;
+  private $emailService;
 
-  public function __construct(ReservaRepository $reservaRepository, EntityManagerInterface $entityManager, UserService $userService) {
+  public function __construct(ReservaRepository $reservaRepository, EntityManagerInterface $entityManager, UserService $userService, EmailService $emailService) {
     $this->reservaRepository = $reservaRepository;
     $this->entityManager = $entityManager;
     $this->userService = $userService;
+    $this->emailService = $emailService;
   }
 
   #[Route('/all', name: 'app_reserva_index', methods: ['GET'])]
@@ -147,10 +151,15 @@ class ReservaController extends AbstractController {
       return $this->json(['error' => "No tienes permiso para eliminar esta reserva"], 403);
     }
 
+    // TODO FALTA REVISAR ESTO
+    if ($usuarioActual->getId() !== $reserva->getIdUsuario()->getId()) {
+      $this->emailService->sendUpdateReservationEmail($reserva->getIdUsuario()->getEmail(), $reserva);
+    }
+
     $this->entityManager->remove($reserva);
     $this->entityManager->flush();
 
-    return $this->json(['ok'=>"Todo correcto. Reserva <{$reserva->getId()}> eliminada correctamente"]);
+    return $this->json(['ok' => "Todo correcto. Reserva <{$reserva->getId()}> eliminada correctamente"]);
   }
 
   // Util functions
