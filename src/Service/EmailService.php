@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Entity\Reserva;
 use Symfony\Component\Mailer\Mailer;
 use Symfony\Component\Mailer\Transport;
 use Symfony\Component\Mime\Email;
@@ -36,6 +37,17 @@ class EmailService {
                 <p>Verifica tu cuenta en: {$urlVerification}</p>
             ";
     $subject = '¡Bienvenido a LetsMove!';
+    $this->sendEmail($sendTo, $subject, $body);
+  }
+
+  public function sendUpdateReservationEmail(string $sendTo, Reserva $reserva) {
+    $body = "
+                <h1>¡Su reserva del día <b>{$reserva->getFechaYHora()->format('Y-m-d H:i')}</b> ha sufrido cambios!</h1>
+                <p>Para más información vaya a nuestra web</p>
+                <p>Lamentamos las molestias.</p>
+
+            ";
+    $subject = '¡Reserva modificada!';
     $this->sendEmail($sendTo, $subject, $body);
   }
 }
