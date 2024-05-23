@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationSuccessHandlerInterface;
 
-class LoginSuccessHandler implements AuthenticationSuccessHandlerInterface {
+class AuthenticationSuccessHandler implements AuthenticationSuccessHandlerInterface {
   private $JWTManager;
   private $userService;
 
@@ -24,7 +24,6 @@ class LoginSuccessHandler implements AuthenticationSuccessHandlerInterface {
 
     if ($user->isVerified() === false) {
       return new JsonResponse([
-        'code' => 403,
         'error' => 'Debes verificar tu cuenta antes de iniciar sesión'
       ], 403);
     }
