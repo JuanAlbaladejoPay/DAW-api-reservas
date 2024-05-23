@@ -98,7 +98,7 @@ class RegistrationController extends AbstractController {
     // TODO falta descomentar esto para enviar los emails
 //    $this->emailService->sendRegistrationEmail($newUser->getEmail(), $urlVerificacion);
 
-    return $this->json(['ok' => 'Te has registrado correctamente', 'message' => 'Se ha enviado un email de verificacion a tu correo']);
+    return $this->json(['ok' => 'Te has registrado correctamente. Verifica tu email para iniciar sesión']);
   }
 
   #[Route('/verify/email', name: 'app_verify_email')]
