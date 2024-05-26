@@ -162,11 +162,44 @@ class ReservaController extends AbstractController {
     return $this->json(['ok' => "Todo correcto. Reserva <{$reserva->getId()}> eliminada correctamente"]);
   }
 
+  #[Route('/edit/{id}', name: 'app_reserva_edit', methods: ['GET', 'POST'])]
+  public function edit(Request $request, Reserva $reserva, InstalacionRepository $instalacionRepository): JsonResponse {
+    $dataBody = json_decode($request->getContent(), true);
+
+    $fechaYHora = new \DateTime($dataBody['fecha'] . ' ' . $dataBody['hora']);
+    $duracion = $dataBody['duracion'];
+    $importe = $dataBody['importe'];
+    $idInstalacion = $dataBody['idInstalacion'];
+
+    $exists = $this->checkIfAReservationExists($fechaYHora, $duracion, $idInstalacion, $reserva->getId());
+    $instalacion = $instalacionRepository->find($idInstalacion);
+
+    if ($exists) {
+      return $this->json(['error' => 'Ya existe una reserva para esa instalación en esa fecha y hora'], Response::HTTP_CONFLICT);
+    }
+
+    $reserva->setFechaYHora($fechaYHora);
+    $reserva->setDuracion($duracion);
+    $reserva->setImporte($importe);
+    $reserva->setIdInstalacion($instalacion);
+
+    $this->entityManager->flush();
+
+    return $this->json(['ok' => "Reserva <{$reserva->getId()}> actualizada correctamente"]);
+  }
+
   // Util functions
-  private function checkIfAReservationExists(\DateTime $fechaYHora, string $duracion, string $idInstalacion): bool {
+  private function checkIfAReservationExists(\DateTime $fechaYHora, string $duracion, string $idInstalacion, int $idReserva = null): bool {
     $fechaInicioComprobacion = (clone $fechaYHora)->modify('-60 minutes');
     $fechaFinComprobacion = (clone $fechaYHora)->modify("+$duracion minutes");
     $reservasExistentes = $this->reservaRepository->findReservasByDayAndHour($fechaInicioComprobacion, $fechaFinComprobacion, $idInstalacion);
+
+    // En caso de EDITAR, tenemos que quitar el id de la reserva que se está editanto
+    if ($idReserva) {
+      $reservasExistentes = array_filter($reservasExistentes, function ($reserva) use ($idReserva) {
+        return $reserva->getId() !== $idReserva;
+      });
+    }
 
     if (count($reservasExistentes) > 0) {
       // aquí tendríamos que comprobar si la duración de la reserva anterior es 60min (en caso de ser 60 no habría problema) pero si es 90min o más, no se podría hacer la reserva
