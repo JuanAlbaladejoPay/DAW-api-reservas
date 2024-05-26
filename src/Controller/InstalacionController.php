@@ -23,6 +23,24 @@ class InstalacionController extends AbstractController {
     ]);
   }
 
+  #[Route('/show/{id}', name: 'app_instalacion_show', methods: ['GET'])]
+  public function showInstallationInfo(Instalacion $installation): JsonResponse {
+    if ($installation !== null) {
+      return $this->json([
+        'ok' => 'Todo ha ido correcto',
+        'results' => [
+          'id' => $installation->getId(),
+          'nombre' => $installation->getNombre(),
+          'precioHora' => $installation->getPrecioHora()
+        ],
+      ]);
+    }
+
+    return $this->json([
+      'error' => 'No se ha encontrado esa instalación',
+    ]);
+  }
+
   #[Route('/new', name: 'app_instalacion_new', methods: ['GET', 'POST'])]
   public function new(Request $request, EntityManagerInterface $entityManager): JsonResponse {
     $instalacion = new Instalacion();
