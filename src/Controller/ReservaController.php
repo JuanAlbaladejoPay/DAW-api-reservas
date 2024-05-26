@@ -77,7 +77,7 @@ class ReservaController extends AbstractController {
     return $this->json(['ok' => 'No hay reservas para el usuario con email ', 'results' => []]);
   }
 
-  #[Route('/idInstalacion={idInstalacion}', name: 'app_reservationsByInstallation', methods: ['GET'])]
+  #[Route('/idInstalacion/{idInstalacion}', name: 'app_reservationsByInstallation', methods: ['GET'])]
   public function showReservationsByInstallation($idInstalacion, InstalacionRepository $instalacionRepository): JsonResponse {
     $reservas = $this->reservaRepository->findBy(['idInstalacion' => $idInstalacion]);
 
