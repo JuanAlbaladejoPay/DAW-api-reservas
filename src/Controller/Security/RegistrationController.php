@@ -24,16 +24,18 @@ use Symfony\Component\Mime\Email;
 
 #[Route('/api', name: 'api_')]
 class RegistrationController extends AbstractController {
-  private $JWTManager;
-  private EmailService $emailService;
+  protected $JWTManager;
+  protected EmailService $emailService;
+  protected VerifyEmailHelperInterface $verifyEmailHelper;
 
-  public function __construct(JWTTokenManagerInterface $JWTManager, EmailService $emailService) { // Añadimos el servicio de verificación de email al constructor
+  public function __construct(JWTTokenManagerInterface $JWTManager, EmailService $emailService, VerifyEmailHelperInterface $verifyEmailHelper) { // Añadimos el servicio de verificación de email al constructor
     $this->JWTManager = $JWTManager;
     $this->emailService = $emailService;
+    $this->verifyEmailHelper = $verifyEmailHelper;
   }
 
   #[Route('/register', name: 'register', methods: 'POST')]
-  public function index(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher, VerifyEmailHelperInterface $verifyEmailHelper): JsonResponse {
+  public function index(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): JsonResponse {
     $dataBody = json_decode($request->getContent(), true);
 
     // Comprobamos que los campos requeridos están en la petición
@@ -47,32 +49,39 @@ class RegistrationController extends AbstractController {
     $user = $entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
 
     // Si el usuario existía pero no tiene password (Viene de GOOGLE), le añadimos la password y el teléfono (previamente comprobamos que realmente es el mismo usuario)
-    if ($user && $user->getPassword() === null) {
+    if ($user && $user->getPassword() === null) { // --> GOOGLE <--
       $name = $dataBody['name'];
       $surname = $dataBody['surname'];
+      // Comprobamos que es el mismo user que inició sesión con Google (comprobando que el nombre y apellidos coinciden)
       if ($user->getNombre() !== $name || $user->getApellidos() !== $surname) {
-        return $this->json(['error' => 'Ya existe un usuario con ese email']);
+        return $this->json(['error' => 'Ya existe un usuario con ese email'], 409);
       }
 
       $hashedPassword = $passwordHasher->hashPassword($user, $dataBody['password']); // Con esto hasheamos la password
       $user->setPassword($hashedPassword);
       $user->setTelefono($dataBody['phone']);
+      // También seteamos sus roles y el isVerified para que tenga que verificar su correo
+      $user->setRoles([]);
+      $user->setVerified(false);
 
       $entityManager->flush();
 
-      $token = $this->JWTManager->create($user);
-      return $this->json(['ok' => 'Te has registrado correctamente', 'results' => ['token' => $token, 'name' => $name, 'email' => $email, 'picture' => null]]);
+      // Creamos la URL de verificación
+      $urlVerificacion = $this->createUrlVerification($user->getId(), $user->getEmail());
+
+      $this->emailService->sendRegistrationEmail($user->getEmail(), $urlVerificacion);
+
+      return $this->json(['ok' => 'Te has registrado correctamente. Verifica tu email para iniciar sesión']);
     }
 
     // Compruebo que el usuario ya existía en la BD teniendo password (para responder que ya existe un usuario con ese email)
     if ($user && $user->getPassword() !== null) {
-      return $this->json(['error' => 'Ya existe un usuario con ese email']);
+      return $this->json(['error' => 'Ya existe un usuario con ese email'], 409);
     }
 
     // Si el usuario no existía previamente lo creamos
     $newUser = new User();
     $newUser->setEmail($email);
-    $newUser->setRoles(['ROLE_USER']); // Por defecto, todos los usuarios son ROLE_USER (se podría cambiar en el formulario de registro
     $newUser->setNombre($dataBody['name']);
     $newUser->setApellidos($dataBody['surname']);
     $newUser->setTelefono($dataBody['phone']);
@@ -82,40 +91,29 @@ class RegistrationController extends AbstractController {
     $entityManager->persist($newUser);
     $entityManager->flush();
 
-    /* Creamos la url de verificación */
-    $signatureComponents = $verifyEmailHelper->generateSignature(
-      'api_app_verify_email',
-      strval($newUser->getId()),
-      $newUser->getEmail(),
-      ['id' => $newUser->getId()]
-    );
+    // Creamos la URL de verificación
+    $urlVerificacion = $this->createUrlVerification($newUser->getId(), $newUser->getEmail());
 
-    $urlVerificacion = $signatureComponents->getSignedUrl();
-
-
-    $token = $this->JWTManager->create($newUser);
-
-    // TODO falta descomentar esto para enviar los emails
-//    $this->emailService->sendRegistrationEmail($newUser->getEmail(), $urlVerificacion);
+    $this->emailService->sendRegistrationEmail($newUser->getEmail(), $urlVerificacion);
 
     return $this->json(['ok' => 'Te has registrado correctamente. Verifica tu email para iniciar sesión']);
   }
 
   #[Route('/verify/email', name: 'app_verify_email')]
-  public function verifyUserEmail(Request $request, VerifyEmailHelperInterface $verifyEmailHelper, UserRepository $userRepository, EntityManagerInterface $entityManager): JsonResponse {
+  public function verifyUserEmail(Request $request, UserRepository $userRepository, EntityManagerInterface $entityManager): JsonResponse {
     $user = $userRepository->find($request->query->get('id'));
     if (!$user) {
       return $this->json(['error' => 'No se encuentra ese usuario']);
     }
     try {
-      $verifyEmailHelper->validateEmailConfirmation(
+      $this->verifyEmailHelper->validateEmailConfirmation(
         $request->getUri(),
         $user->getId(),
         $user->getEmail(),
       );
 
       $user->setVerified(true);
-      $user->setRoles(['ROLE_USER', 'ROLE_VERIFIED']);
+      $user->setRoles(['ROLE_USER']);
       $entityManager->flush();
 
     } catch (VerifyEmailExceptionInterface $e) {
@@ -135,6 +133,17 @@ class RegistrationController extends AbstractController {
     }
 
     return null;
+  }
+
+  private function createUrlVerification(int $id, string $email): string {
+    $signatureComponents = $this->verifyEmailHelper->generateSignature(
+      'api_app_verify_email',
+      strval($id),
+      $email,
+      ['id' => $id]
+    );
+
+    return $signatureComponents->getSignedUrl();
   }
 
 }

@@ -69,7 +69,7 @@ class GoogleController extends AbstractController {
 
     $user = new User();
     $user->setEmail($email);
-    $user->setRoles(['ROLE_USER', 'ROLE_VERIFIED']);
+    $user->setRoles(['ROLE_USER']);
     $user->setNombre($name);
     $user->setApellidos($surname);
     $user->setVerified(true);
@@ -92,7 +92,6 @@ class GoogleController extends AbstractController {
         'isAdmin' => $this->userService->isAdmin()
       ]
     ]);
-
   }
 }
 /* TODO:
