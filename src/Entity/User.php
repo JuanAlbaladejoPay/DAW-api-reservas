@@ -42,6 +42,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface {
   #[ORM\Column]
   private ?bool $verified = false;
 
+  #[ORM\Column(length: 255, nullable: true)]
+  private ?string $passwordBackup = null;
+
   public function getId(): ?int {
     return $this->id;
   }
@@ -151,5 +154,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface {
     $this->verified = $verified;
 
     return $this;
+  }
+
+  public function getPasswordBackup(): ?string
+  {
+      return $this->passwordBackup;
+  }
+
+  public function setPasswordBackup(?string $passwordBackup): static
+  {
+      $this->passwordBackup = $passwordBackup;
+
+      return $this;
   }
 }
