@@ -27,7 +27,7 @@ class EmailService {
     }
   }
 
-  public function sendRegistrationEmail(string $sendTo, string $urlVerification) {
+  public function sendRegistrationEmail(string $sendTo, string $urlVerification): void {
     $body = "
                 <h1>¡Bienvenido a LetsMove!</h1>
                 <p>¡Gracias por registrarte en nuestro sitio!</p>
@@ -40,7 +40,17 @@ class EmailService {
     $this->sendEmail($sendTo, $subject, $body);
   }
 
-  public function sendUpdateReservationEmail(string $sendTo, Reserva $reserva) {
+  public function sendRestorePasswordEmail(string $sendTo, string $passwordToken): void {
+    $body = "
+                <h1>¿Has olvidado tu contraseña?</h1>
+                <p>No te preocupes, simplemente copia este token en nuestra aplicación y escribe tu correo electrónico para verificar que quieres cambiar la contraseña</p>
+                <p>Token: {$passwordToken}</p>
+            ";
+    $subject = '¡Bienvenido a LetsMove!';
+    $this->sendEmail($sendTo, $subject, $body);
+  }
+
+  public function sendUpdateReservationEmail(string $sendTo, Reserva $reserva): void {
     $body = "
                 <h1>¡Su reserva del día <b>{$reserva->getFechaYHora()->format('Y-m-d H:i')}</b> ha sufrido cambios!</h1>
                 <p>Para más información vaya a nuestra web</p>

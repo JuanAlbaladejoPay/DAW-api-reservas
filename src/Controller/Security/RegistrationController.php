@@ -27,26 +27,28 @@ class RegistrationController extends AbstractController {
   protected $JWTManager;
   protected EmailService $emailService;
   protected VerifyEmailHelperInterface $verifyEmailHelper;
+  protected EntityManagerInterface $entityManager;
 
-  public function __construct(JWTTokenManagerInterface $JWTManager, EmailService $emailService, VerifyEmailHelperInterface $verifyEmailHelper) { // Añadimos el servicio de verificación de email al constructor
+  public function __construct(JWTTokenManagerInterface $JWTManager, EmailService $emailService, VerifyEmailHelperInterface $verifyEmailHelper, EntityManagerInterface $entityManager) { // Añadimos el servicio de verificación de email al constructor
     $this->JWTManager = $JWTManager;
     $this->emailService = $emailService;
     $this->verifyEmailHelper = $verifyEmailHelper;
+    $this->entityManager = $entityManager;
   }
 
   #[Route('/register', name: 'register', methods: 'POST')]
-  public function index(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): JsonResponse {
+  public function index(Request $request, UserPasswordHasherInterface $passwordHasher): JsonResponse {
     $dataBody = json_decode($request->getContent(), true);
 
     // Comprobamos que los campos requeridos están en la petición
     $missingFieldMessage = $this->verifyRequiredFields($dataBody);
-    if ($missingFieldMessage) {
+    if ($missingFieldMessage !== "") {
       return $this->json(['error' => $missingFieldMessage], 400);
     }
 
     // Compruebo si ya existe este usuario en la BD (por si se registró con Google pero no puso password)
     $email = $dataBody['email'];
-    $user = $entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
+    $user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
 
     // Si el usuario existía pero no tiene password (Viene de GOOGLE), le añadimos la password y el teléfono (previamente comprobamos que realmente es el mismo usuario)
     if ($user && $user->getPassword() === null) { // --> GOOGLE <--
@@ -64,7 +66,7 @@ class RegistrationController extends AbstractController {
       $user->setRoles([]);
       $user->setVerified(false);
 
-      $entityManager->flush();
+      $this->entityManager->flush();
 
       // Creamos la URL de verificación
       $urlVerificacion = $this->createUrlVerification($user->getId(), $user->getEmail());
@@ -88,8 +90,8 @@ class RegistrationController extends AbstractController {
     $hashedPassword = $passwordHasher->hashPassword($newUser, $dataBody['password']); // Con esto hasheamos la password
     $newUser->setPassword($hashedPassword);
 
-    $entityManager->persist($newUser);
-    $entityManager->flush();
+    $this->entityManager->persist($newUser);
+    $this->entityManager->flush();
 
     // Creamos la URL de verificación
     $urlVerificacion = $this->createUrlVerification($newUser->getId(), $newUser->getEmail());
@@ -123,7 +125,53 @@ class RegistrationController extends AbstractController {
     return $this->json(['ok' => 'Email verificado correctamente']);
   }
 
-  private function verifyRequiredFields($dataBody) {
+  #[Route('/request-reset-password', name: 'request_reset_password', methods: 'POST')]
+  public function restorePassword(Request $request, UserRepository $userRepository): JsonResponse {
+    $dataBody = json_decode($request->getContent(), true);
+    $email = $dataBody['email'];
+
+    $user = $userRepository->findOneBy(['email' => $email]);
+
+    if (!$user) {
+      return $this->json(['error' => 'No existe ningún usuario con ese email'], 404);
+    }
+
+    $restorePasswordToken = bin2hex(random_bytes(32));
+
+    $user->setPasswordBackup($restorePasswordToken);
+    $this->entityManager->flush();
+
+    $this->emailService->sendRestorePasswordEmail($user->getEmail(), $restorePasswordToken);
+
+    return $this->json(['ok' => 'Se ha enviado un email con las instrucciones para restaurar la contraseña']);
+  }
+
+  #[Route('/reset-password', name: 'reset_password', methods: 'POST')]
+  public function resetPassword(Request $request, EntityManagerInterface $entityManager, UserRepository $userRepository, UserPasswordHasherInterface $passwordHasher): JsonResponse {
+    $dataBody = json_decode($request->getContent(), true);
+
+    $email = $dataBody['email'];
+    $token = $dataBody['token'];
+    $newPassword = $dataBody['newPassword'];
+
+    $user = $userRepository->findOneBy(['email' => $email, 'passwordBackup' => $token]);
+
+    if (!$user) {
+      return $this->json(['error' => 'Token inválido'], 404);
+    }
+
+    // Hashea la nueva contraseña y la guarda en el usuario
+    $hashedPassword = $passwordHasher->hashPassword($user, $newPassword);
+    $user->setPassword($hashedPassword);
+
+    // Borra el token de restablecimiento de contraseña
+    $user->setPasswordBackup(null);
+    $entityManager->flush();
+
+    return $this->json(['ok' => 'Contraseña restablecida con éxito']);
+  }
+
+  private function verifyRequiredFields($dataBody): string {
     $requiredFields = ['email', 'password', 'name', 'surname', 'phone'];
 
     foreach ($requiredFields as $field) {
@@ -132,7 +180,7 @@ class RegistrationController extends AbstractController {
       }
     }
 
-    return null;
+    return "";
   }
 
   private function createUrlVerification(int $id, string $email): string {
