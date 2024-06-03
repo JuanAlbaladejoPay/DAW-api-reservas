@@ -3,3 +3,7 @@ controllers:
     type: attribute
 api_login_check:
     path: /api/login_check
+create_payment_intent:
+    path: /api/create-payment-intent
+    controller: App\Controller\PaymentController::createPaymentIntent
+
