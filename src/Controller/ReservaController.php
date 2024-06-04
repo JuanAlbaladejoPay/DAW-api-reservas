@@ -185,7 +185,7 @@ class ReservaController extends AbstractController {
 
     $this->entityManager->flush();
 
-    return $this->json(['ok' => "Reserva <{$reserva->getId()}> actualizada correctamente"]);
+    return $this->json(['ok' => "Reserva {$reserva->getId()} actualizada correctamente"]);
   }
 
   // Util functions
