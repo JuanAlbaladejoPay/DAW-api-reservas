@@ -19,6 +19,15 @@ class ReservaRepository extends ServiceEntityRepository {
     parent::__construct($registry, Reserva::class);
   }
 
+  public function findFutureReservations() {
+    return $this->createQueryBuilder('r')
+      ->andWhere('r.fechaYHora >= :currentDateTime')
+      ->setParameter('currentDateTime', (new \DateTime('now'))->setTime(0, 0, 0))
+      ->orderBy('r.fechaYHora', 'ASC')
+      ->getQuery()
+      ->getResult();
+  }
+
   /**
    * @return Reserva[] Returns an array of Reserva objects
    */

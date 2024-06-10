@@ -32,7 +32,7 @@ class ReservaController extends AbstractController {
 
   #[Route('/all', name: 'app_reserva_index', methods: ['GET'])]
   public function index(ReservaRepository $reservaRepository): JsonResponse {
-    $reservas = $reservaRepository->findAll();
+    $reservas = $reservaRepository->findFutureReservations();
     $reservasArray = [];
 
     foreach ($reservas as $reserva) {
