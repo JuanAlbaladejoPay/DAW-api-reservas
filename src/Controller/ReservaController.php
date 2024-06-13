@@ -151,7 +151,6 @@ class ReservaController extends AbstractController {
       return $this->json(['error' => "No tienes permiso para eliminar esta reserva"], 403);
     }
 
-    // TODO FALTA REVISAR ESTO
     if ($usuarioActual->getId() !== $reserva->getIdUsuario()->getId()) {
       $this->emailService->sendUpdateReservationEmail($reserva->getIdUsuario()->getEmail(), $reserva);
     }

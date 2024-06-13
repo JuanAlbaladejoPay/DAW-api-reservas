@@ -77,8 +77,12 @@ class InstalacionController extends AbstractController {
 
   #[Route('/delete/{id}', name: 'app_instalacion_delete', methods: ['POST'])]
   public function delete(Instalacion $instalacion, EntityManagerInterface $entityManager): Response {
-    $entityManager->remove($instalacion);
-    $entityManager->flush();
+    try {
+      $entityManager->remove($instalacion);
+      $entityManager->flush();
+    } catch (\Exception $e) {
+      return $this->json(['error' => 'No se ha podido eliminar la instalación porque ya tiene reservas']);
+    }
 
     return $this->json(['ok' => "Instalación {$instalacion->getNombre()} eliminada correctamente"]);
   }
