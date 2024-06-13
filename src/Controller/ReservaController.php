@@ -159,7 +159,7 @@ class ReservaController extends AbstractController {
     $this->entityManager->remove($reserva);
     $this->entityManager->flush();
 
-    return $this->json(['ok' => "Todo correcto. Reserva <{$reserva->getId()}> eliminada correctamente"]);
+    return $this->json(['ok' => "Reserva eliminada correctamente"]);
   }
 
   #[Route('/edit/{id}', name: 'app_reserva_edit', methods: ['GET', 'POST'])]
@@ -185,7 +185,7 @@ class ReservaController extends AbstractController {
 
     $this->entityManager->flush();
 
-    return $this->json(['ok' => "Reserva {$reserva->getId()} actualizada correctamente"]);
+    return $this->json(['ok' => "Reserva actualizada correctamente"]);
   }
 
   // Util functions
