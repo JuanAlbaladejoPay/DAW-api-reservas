@@ -52,8 +52,8 @@ class EmailService {
 
   public function sendUpdateReservationEmail(string $sendTo, Reserva $reserva): void {
     $body = "
-                <h1>¡Su reserva del día <b>{$reserva->getFechaYHora()->format('Y-m-d H:i')}</b> ha sufrido cambios!</h1>
-                <p>Para más información vaya a nuestra web</p>
+                <h1>¡Su reserva del día <b>{$reserva->getFechaYHora()->format('Y-m-d H:i')}</b> ha sido eliminada!</h1>
+                <p>Para realizar una nueva reserva visite nuestra web</p>
                 <p>Lamentamos las molestias.</p>
             ";
     $subject = '¡Reserva modificada!';
