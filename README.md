@@ -1,14 +1,12 @@
-# Al clonar el repositorio:
+# Guía para Configurar el Proyecto
 
-Aquí están los pasos que tu compañero debería seguir después de clonar el repositorio:
+Sigue estos pasos después de clonar el repositorio para configurar y utilizar el proyecto correctamente:
 
 ## 1º Crear un archivo .env:
 
-Este archivo debe contener todas las variables de entorno necesarias para el proyecto. Puede basarse en el archivo .env que proporcionaste, pero debe reemplazar los valores de las variables con los valores apropiados para su entorno local.
+Crea un archivo .env en la raíz del proyecto y define todas las variables de entorno necesarias. 
 
-Luego, debe **editar el archivo .env** y establecer los valores correctos para su entorno.
-
-## 2º Instalar las dependencias de Composer: Esto instalará todas las dependencias PHP necesarias para el proyecto.
+## 2º Instalar las dependencias de Composer
 
 **composer install**
 
