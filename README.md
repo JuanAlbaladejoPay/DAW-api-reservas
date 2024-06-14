@@ -82,8 +82,4 @@ Es necesario tener XAMPP instalado para el correcto funcionamiento del proyecto.
 
 **symfony server:start**
 
-## Enlace de ayuda:
-
-https://www.binaryboxtuts.com/php-tutorials/symfony-6-json-web-tokenjwt-authentication/
-
 ## !Listo para funcionar!
