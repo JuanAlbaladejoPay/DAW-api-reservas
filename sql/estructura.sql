@@ -35,14 +35,3 @@ CREATE TABLE reservas (
     FOREIGN KEY (idInstalacion) REFERENCES instalaciones(id),
     UNIQUE (idInstalacion, fecha, hora)
 );
-
-
-/*TODO: Comprobar que no superponemos reservas para la misma instalación en la misma fecha y hora (o duración).
-- Antes de insertar una nueva reserva en la base de datos, consulta todas las reservas existentes para la misma instalación en la misma fecha.
-
-- Para cada reserva existente, verifica si hay superposición de horarios con la nueva reserva que se está intentando insertar. Esto se puede hacer comparando la hora de inicio y la duración de la reserva existente con la hora de inicio y duración de la nueva reserva.
-
-- Si encuentras alguna superposición, lanza un error indicando que la nueva reserva no se puede realizar debido a la superposición de horarios.
-
-- Si no hay superposiciones con ninguna reserva existente, procede a insertar la nueva reserva en la base de datos. 
- */

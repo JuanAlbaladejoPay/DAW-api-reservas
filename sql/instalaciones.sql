@@ -10,9 +10,7 @@ INSERT INTO Instalaciones (nombre, precioHora) VALUES
 ('Piscina cubierta', 3),
 ('Volleyball', 15);
 
-/* TODO
-- Sería mejor añadir un campo de tipo de instalación para poder hacer consultas más eficientes? Respuesta de Copilot:
-Sí, eso podría ser una buena idea si quieres normalizar tu base de datos. Podrías tener una tabla separada para los tipos de instalaciones y luego referenciar esa tabla en tu tabla de instalaciones. Aquí te dejo un ejemplo de cómo podrías hacerlo:
+/*
 CREATE TABLE TipoInstalacion (
     id INT PRIMARY KEY,
     nombre VARCHAR(255)

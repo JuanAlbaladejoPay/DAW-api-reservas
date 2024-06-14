@@ -24,27 +24,3 @@ VALUES ('2024-06-10 09:00:00', '60', '6', '1', '1'),
        ('2024-06-11 22:00:00', '60', '15', '1', '8'),
        ('2024-06-11 18:00:00', '60', '15', '1', '1'),
        ('2024-06-11 22:00:00', '60', '15', '1', '2');
-
-/* TODO:
-- Hay que ver cómo manejar la zona horaria en la BD (Mysql no soporta manejarlo en el tipo datetime)
- */
-/* 
-
-// SI NO TE FUNCIONA EL INSERT HAZ ESTO
-
-// SELECT TABLE_NAME, CONSTRAINT_NAME
-// FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
-// WHERE COLUMN_NAME = 'idInstalacion';
-
-// -- Eliminar la restricción de clave externa
-// ALTER TABLE reservas DROP FOREIGN KEY FK_536BC957FE06F768; <- EL CODIGO QUE TE SALGA A TI
-
-// -- Deshabilitar temporalmente las restricciones de clave externa
-// SET FOREIGN_KEY_CHECKS = 0;
-
-// -- Eliminar el índice
-// ALTER TABLE reservas DROP INDEX UNIQ_536BC957FE06F768; <- EL CODIGO QUE TE SALGA A TI
-
-// -- Volver a habilitar las restricciones de clave externa
-// SET FOREIGN_KEY_CHECKS = 1;
- */

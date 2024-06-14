@@ -104,7 +104,7 @@ class ReservaController extends AbstractController {
   #[Route('/new', name: 'app_reserva_new', methods: ['GET', 'POST'])]
   public function new(Request $request, InstalacionRepository $instalacionRepository): JsonResponse {
     $reserva = new Reserva();
-    // "type hinting" a tu objeto $usuarioActual como instancia de tu clase User. Esto le indicará a tu IDE que el objeto es una instancia de User y debería permitirte acceder a los métodos definidos en esa clase.
+    
     /** @var \App\Entity\User $usuarioActual */
     $usuarioActual = $this->getUser();
 
@@ -187,7 +187,6 @@ class ReservaController extends AbstractController {
     return $this->json(['ok' => "Reserva actualizada correctamente"]);
   }
 
-  // Util functions
   private function checkIfAReservationExists(\DateTime $fechaYHora, string $duracion, string $idInstalacion, int $idReserva = null): bool {
     $fechaInicioComprobacion = (clone $fechaYHora)->modify('-60 minutes');
     $fechaFinComprobacion = (clone $fechaYHora)->modify("+$duracion minutes");
@@ -225,12 +224,6 @@ class ReservaController extends AbstractController {
   }
 
 }
-
-/* TODO
-- Editar el método de DELETE reservas, la ruta habrá que modificarla ahora mismo está /id
-- Repasar método EDIT
-- Utilizar CARBON librería de PHP para trabajar con fechas??
-*/
 
 /*  POR SI A CASO
 #[Route('/{id}', name: 'app_reserva_show', methods: ['GET'])]

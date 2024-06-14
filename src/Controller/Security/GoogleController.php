@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Controller\Security;
-// He añadio \Security
 
 use App\Service\UserService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -13,9 +12,6 @@ use App\Entity\User;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 
-//use Google_Client;
-
-// composer require google/apiclient:"^2.0"
 
 #[Route('/api', name: 'api_')]
 class GoogleController extends AbstractController {
@@ -73,8 +69,6 @@ class GoogleController extends AbstractController {
     $user->setNombre($name);
     $user->setApellidos($surname);
     $user->setVerified(true);
-//      $user->setTelefono($phone); // Lo mismo con teléfono
-//      $user->setPassword("") // Hay que ver cómo tratar lo de contraseñas cuando te registras con google
 
     $entityManager->persist($user);
     $entityManager->flush();
@@ -94,9 +88,3 @@ class GoogleController extends AbstractController {
     ]);
   }
 }
-/* TODO:
-- Intentar verificar que el token recibido del cliente es correcto (lo que ahora mismo está comentado (el if isVerfied englobaba el resto de código pero el método verifyIdToken siempre devuelve false)
-- Añadir el campo de teléfono a la entidad User cuando quiera registrarse con Google (hay que ver cómo hacerlo)
-- Añadir el campo de password a la entidad User cuando quiera registrarse con Google (hay que ver cómo hacerlo)
-
-*/

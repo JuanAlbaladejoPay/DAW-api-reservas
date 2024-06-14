@@ -94,10 +94,6 @@ class UserController extends AbstractController {
 }
 
     /* 
-    TODO:
-    - Controlar las rutas a las que puede acceder un usuario
-    - Se podría añadir esto para manejar errores 
-    
     try { 
       $params = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
 

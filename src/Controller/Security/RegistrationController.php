@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Controller\Security;
-// He añadio \Security
 
 use App\Repository\UserRepository;
 use App\Service\EmailService;
@@ -29,7 +28,7 @@ class RegistrationController extends AbstractController {
   protected VerifyEmailHelperInterface $verifyEmailHelper;
   protected EntityManagerInterface $entityManager;
 
-  public function __construct(JWTTokenManagerInterface $JWTManager, EmailService $emailService, VerifyEmailHelperInterface $verifyEmailHelper, EntityManagerInterface $entityManager) { // Añadimos el servicio de verificación de email al constructor
+  public function __construct(JWTTokenManagerInterface $JWTManager, EmailService $emailService, VerifyEmailHelperInterface $verifyEmailHelper, EntityManagerInterface $entityManager) {
     $this->JWTManager = $JWTManager;
     $this->emailService = $emailService;
     $this->verifyEmailHelper = $verifyEmailHelper;
@@ -196,18 +195,7 @@ class RegistrationController extends AbstractController {
 
 }
 
-/* TODO
-- Refactorizar el código (se repiten muchas líneas)
-- Poner una columna "picture" en la bd?? De google recibimos también la foto de perfil, sería conveniente tener una columna para guardar imágenes
-*/
-
-/* TODO
-- Subir imágenes desde el cliente
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\File\Exception\FileException;
-
-
-
+/*
 /**
  * @Route("/upload", name="upload", methods={"POST"})
  *
