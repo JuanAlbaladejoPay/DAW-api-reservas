@@ -4,7 +4,20 @@ Sigue estos pasos después de clonar el repositorio para configurar y utilizar e
 
 ## 1º Crear un archivo .env:
 
-Crea un archivo .env en la raíz del proyecto y define todas las variables de entorno necesarias. 
+Crea un archivo .env en la raíz del proyecto y define todas las variables de entorno necesarias. Aquí tienes uno de ejemplo:
+
+APP_ENV=dev
+APP_SECRET=tu_llave_secreta
+
+DATABASE_URL="mysql://db_user:db_password@127.0.0.1:3306/db_name?serverVersion=8&charset=utf8mb4"
+
+MESSENGER_TRANSPORT_DSN=doctrine://default?auto_setup=0
+
+JWT_SECRET_KEY=%kernel.project_dir%/config/jwt/private.pem
+JWT_PUBLIC_KEY=%kernel.project_dir%/config/jwt/public.pem
+JWT_PASSPHRASE=tu_frase_pass_jwt
+
+CORS_ALLOW_ORIGIN='^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?$'
 
 ## 2º Instalar las dependencias de Composer
 
