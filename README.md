@@ -60,8 +60,12 @@ nelmio_cors:
       allow_headers: ['Content-Type', 'Authorization']
       max_age: 3600
       allow_credentials: true
+      
+## 6º Instalar XAMPP
 
-## 6º Iniciar el servidor de desarrollo de Symfony
+Es necesario tener XAMPP instalado para el correcto funcionamiento del proyecto. Puedes descargarlo e instalarlo desde aquí. https://www.apachefriends.org/es/index.html
+
+## 7º Iniciar el servidor de desarrollo de Symfony
 
 **symfony server:start**
 
