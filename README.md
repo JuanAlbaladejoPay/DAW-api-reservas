@@ -8,18 +8,20 @@ Crea un archivo .env en la raíz del proyecto y define todas las variables de en
 
 ## 2º Instalar las dependencias de Composer
 
+Instala todas las dependencias PHP necesarias para el proyecto ejecutando el siguiente comando:
+
 **composer install**
 
-## 3º Generar las claves JWT: Como las claves JWT no están en el repositorio, tu compañero necesitará generar las suyas propias.
+## 3º Generar las claves JWT
 
-Si no tienes instalado OPENSSL en el ordenador, instalalo (enlace para windows:)
+Como las claves JWT no están en el repositorio, necesitarás generar las tuyas propias.
 
-**Instalar OPENSSL:** https://slproweb.com/products/Win32OpenSSL.html
+1. Si no tienes instalado OpenSSL, instálalo desde aquí para Windows. https://slproweb.com/products/Win32OpenSSL.html
+2. Luego, ejecuta el siguiente comando para generar las claves JWT:
 
 **php bin/console lexik:jwt:generate-keypair**
 
-Si falla ese comando, hay que crear manualmente la carpeta jwt en config (/config/jwt) y ejecutar lo siguiente:
-Durante la generación, se le pedirá que proporcione una frase de contraseña. Esta debe ser la misma que la que se establece en JWT_PASSPHRASE en el archivo .env (Si el comando de arriba funciona esto no es necesario, lo hace automáticamente)
+3. Si el comando anterior falla, crea manualmente la carpeta jwt en config y ejecuta los siguientes comandos:
 
 **mkdir config/jwt**
 
@@ -27,7 +29,9 @@ Durante la generación, se le pedirá que proporcione una frase de contraseña. 
 
 **openssl rsa -pubout -in config/jwt/private.pem -out config/jwt/public.pem**
 
-## 4º Crear la base de datos y las tablas: Si estás utilizando Doctrine, puedes crear la base de datos y las tablas utilizando los comandos de consola de Doctrine:
+Durante la generación, se te pedirá que proporciones una frase de contraseña. Esta debe ser la misma que la establecida en JWT_PASSPHRASE en el archivo .env.
+
+## 4º Crear la base de datos y las tablas
 
 **php bin/console doctrine:database:create**
 
@@ -37,22 +41,27 @@ Durante la generación, se le pedirá que proporcione una frase de contraseña. 
 
 ## 5º Para permitir CORS con nuestro proyecto de frontend utilizamos nelmio/cors-bundle:
 
-Ese paquete se instala al hacer composer install (ya que lo tenemos previamente en el composer.json)
-
-Y modificamos el fichero /config/packages/nelmio_cors.yaml:
+El paquete nelmio/cors-bundle se instala automáticamente al ejecutar composer install, ya que está en el composer.json. Modifica el archivo /config/packages/nelmio_cors.yaml con la siguiente configuración:
 
 nelmio_cors:
-defaults:
-origin_regex: false
-allow_origin: ['http://localhost:3001']
-allow_methods: ['GET', 'OPTIONS', 'POST', 'PUT', 'PATCH', 'DELETE']
-allow_headers: ['Content-Type', 'Authorization']
-expose_headers: ['Link']
-max_age: 3600
-paths:
-'^/api/': ~
+  defaults:
+    origin_regex: true
+    allow_origin: ['^http://localhost:5173$', '^http://35.181.213.37:80']
+    allow_methods: ['GET', 'OPTIONS', 'POST', 'PUT', 'PATCH', 'DELETE']
+    allow_headers: ['Content-Type', 'Authorization']
+    expose_headers: ['Link']
+    allow_credentials: true
+    max_age: 3600
+  paths:
+    '^/api':
+      origin_regex: true
+      allow_origin: ['^http://localhost:5173$', '^http://35.181.213.37:80']
+      allow_methods: ['GET', 'OPTIONS', 'POST', 'PUT', 'PATCH', 'DELETE']
+      allow_headers: ['Content-Type', 'Authorization']
+      max_age: 3600
+      allow_credentials: true
 
-## 6º Finalmente, iniciar el servidor de desarrollo de Symfony:
+## 6º Iniciar el servidor de desarrollo de Symfony
 
 **symfony server:start**
 
@@ -60,4 +69,4 @@ paths:
 
 https://www.binaryboxtuts.com/php-tutorials/symfony-6-json-web-tokenjwt-authentication/
 
-## A funcionar!!
+## !Listo para funcionar!
